@@ -62,7 +62,7 @@ export function layoutTimeline(summary: TraceSummary, opts: LayoutOptions): Lane
   const lanes: Lane[] = []
   let y = 0
   for (const g of summary.goroutines) {
-    const rects: LayoutRect[] = g.intervals.map((iv) => {
+    const rects: LayoutRect[] = (g.intervals ?? []).map((iv) => {
       const x = scale.toPixel(iv.start)
       return {
         x,

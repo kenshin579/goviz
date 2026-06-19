@@ -108,6 +108,8 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 			}
 			continue
 		case exptrace.EventLog:
+			// A log without a goroutine context keeps GoID == NoGoroutine; the
+			// frontend groups logs by GoID, so it simply won't attach to a lane.
 			lg := ev.Log()
 			logs = append(logs, model.Log{
 				Time: now, GoID: int64(ev.Goroutine()), Category: lg.Category, Message: lg.Message,
@@ -201,7 +203,12 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 			})
 		}
 		b.regionStack = nil
-		sort.Slice(b.g.Regions, func(i, j int) bool { return b.g.Regions[i].Start < b.g.Regions[j].Start })
+		sort.Slice(b.g.Regions, func(i, j int) bool {
+			if b.g.Regions[i].Start != b.g.Regions[j].Start {
+				return b.g.Regions[i].Start < b.g.Regions[j].Start
+			}
+			return b.g.Regions[i].Depth < b.g.Regions[j].Depth
+		})
 	}
 
 	gs := make([]model.Goroutine, 0, len(builders))
