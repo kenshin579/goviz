@@ -12,8 +12,10 @@
   import { visibleGoroutines } from '../lib/filter'
   import { buildGraphModel, type GraphNode, type GraphLink } from '../lib/graphModel'
   import { stateAt, activeEdges } from '../lib/activeAt'
-  import { stateColor } from '../lib/format'
+  import { stateColor, DIM_COLOR, EDGE_ACTIVE_COLOR, goroutineLabel } from '../lib/format'
   import type { Goroutine, CausalEdge } from '../lib/types'
+  import { nodeAtPoint, distToSegment } from '../lib/hit'
+  import { nodeTooltip, edgeTooltip } from '../lib/tooltip'
 
   const { summary, playhead, showSystem, selectedId } = traceStore
 
@@ -26,6 +28,7 @@
   let links: GraphLink[] = []
   let goroutineById = new Map<number, Goroutine>()
   let sim: Simulation<GraphNode, GraphLink> | undefined
+  let tip: { text: string; x: number; y: number } | null = null
 
   // Rebuild the graph + simulation ONLY when the visible node set changes
   // (summary or filter) — never on playhead, so the layout stays stable.
@@ -76,7 +79,7 @@
       const tg = l.target as unknown as GraphNode
       if (s.x == null || tg.x == null) continue
       const isActive = active.has(`${s.id}->${tg.id}`)
-      ctx.strokeStyle = isActive ? '#5b8def' : '#2a2e38'
+      ctx.strokeStyle = isActive ? EDGE_ACTIVE_COLOR : DIM_COLOR
       ctx.lineWidth = isActive ? 2.5 : 1
       ctx.beginPath()
       ctx.moveTo(s.x, s.y!)
@@ -89,7 +92,7 @@
       if (n.x == null) continue
       const g = goroutineById.get(n.id)
       const st = g ? stateAt(g, t) : null
-      ctx.fillStyle = st ? stateColor(st) : '#2a2e38' // dim if not alive at t
+      ctx.fillStyle = st ? stateColor(st) : DIM_COLOR // dim if not alive at t
       ctx.beginPath()
       ctx.arc(n.x, n.y!, 9, 0, Math.PI * 2)
       ctx.fill()
@@ -101,13 +104,47 @@
     }
   }
 
-  function nodeAt(px: number, py: number): GraphNode | undefined {
-    return nodes.find((n) => n.x != null && Math.hypot(n.x - px, n.y! - py) <= 10)
-  }
   function onClick(e: MouseEvent) {
     const rect = canvas.getBoundingClientRect()
-    const n = nodeAt(e.clientX - rect.left, e.clientY - rect.top)
+    const n = nodeAtPoint(nodes, e.clientX - rect.left, e.clientY - rect.top, 10)
     if (n) traceStore.toggleSelected(n.id)
+  }
+
+  function labelOf(id: number): string {
+    const g = goroutineById.get(id)
+    return g ? goroutineLabel(g) : `g${id}`
+  }
+
+  function onPointerMove(e: PointerEvent) {
+    const rect = canvas.getBoundingClientRect()
+    const px = e.clientX - rect.left
+    const py = e.clientY - rect.top
+    // Node hover wins over edge hover.
+    const n = nodeAtPoint(nodes, px, py, 10)
+    if (n) {
+      const g = goroutineById.get(n.id)
+      tip = { text: nodeTooltip(n.label, g ? stateAt(g, $playhead) : null), x: px, y: py }
+      return
+    }
+    // Nearest edge within 5px.
+    let best: { l: GraphLink; d: number } | null = null
+    for (const l of links) {
+      const s = l.source as unknown as GraphNode
+      const t = l.target as unknown as GraphNode
+      if (s.x == null || t.x == null) continue
+      const d = distToSegment(px, py, s.x, s.y!, t.x, t.y!)
+      if (d <= 5 && (!best || d < best.d)) best = { l, d }
+    }
+    if (best) {
+      const s = best.l.source as unknown as GraphNode
+      const t = best.l.target as unknown as GraphNode
+      tip = { text: edgeTooltip(best.l.category, labelOf(s.id), labelOf(t.id)), x: px, y: py }
+    } else {
+      tip = null
+    }
+  }
+  function onPointerLeave() {
+    tip = null
   }
 
   onMount(() => {
@@ -126,10 +163,23 @@
   onDestroy(() => sim?.stop())
 </script>
 
-<div bind:this={container} class="graph-wrap">
-  <canvas bind:this={canvas} on:click={onClick} style="width:100%; display:block; cursor:pointer;"></canvas>
+<div bind:this={container} class="graph-wrap" on:pointerleave={onPointerLeave}>
+  <canvas
+    bind:this={canvas}
+    on:click={onClick}
+    on:pointermove={onPointerMove}
+    style="width:100%; display:block; cursor:pointer;"
+  ></canvas>
+  {#if tip}
+    <div class="tip" style="left:{tip.x + 12}px; top:{tip.y + 12}px">{tip.text}</div>
+  {/if}
 </div>
 
 <style>
-  .graph-wrap { width: 100%; height: 100%; min-height: 280px; }
+  .graph-wrap { width: 100%; height: 100%; min-height: 280px; position: relative; }
+  .tip {
+    position: absolute; pointer-events: none; white-space: pre; z-index: 10;
+    background: #161922; color: #cdd3df; border: 1px solid #2a2e38;
+    border-radius: 4px; padding: 4px 8px; font-size: 12px; line-height: 1.35;
+  }
 </style>
