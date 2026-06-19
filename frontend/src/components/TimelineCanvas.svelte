@@ -5,7 +5,7 @@
   import { makeTimeScale } from '../lib/timeMap'
   import { visibleGoroutines } from '../lib/filter'
 
-  const { summary, playhead, showSystem, setPlayhead } = traceStore
+  const { summary, playhead, showSystem, selectedId, setPlayhead } = traceStore
 
   let container: HTMLDivElement
   let canvas: HTMLCanvasElement
@@ -29,7 +29,7 @@
 
   // Redraw whenever any input to the picture changes. draw() no-ops until the
   // canvas is mounted; onMount triggers the first real paint.
-  $: void [$playhead, lanes, cssWidth, cssHeight], draw()
+  $: void [$playhead, lanes, cssWidth, cssHeight, $selectedId], draw()
 
   function draw() {
     if (!canvas) return
@@ -56,6 +56,17 @@
       }
     }
 
+    const lanesBottom = lanes.length * (LANE_H + LANE_GAP)
+
+    // Highlight the selected goroutine's lane.
+    for (const lane of lanes) {
+      if (lane.goroutineId === $selectedId) {
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 1.5
+        ctx.strokeRect(0.5, lane.y + 0.5, cssWidth - 1, lane.height - 1)
+      }
+    }
+
     if ($summary) {
       const scale = makeTimeScale($summary.startTime, $summary.endTime, 0, cssWidth)
       const x = scale.toPixel($playhead)
@@ -63,7 +74,7 @@
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.moveTo(x, 0)
-      ctx.lineTo(x, cssHeight)
+      ctx.lineTo(x, Math.max(lanesBottom, 1)) // clamp to lanes, not full canvas
       ctx.stroke()
     }
   }

@@ -4,6 +4,7 @@
   import type { TraceSummary } from './lib/types'
   import TimelineCanvas from './components/TimelineCanvas.svelte'
   import Controls from './components/Controls.svelte'
+  import GraphCanvas from './components/GraphCanvas.svelte'
 
   const { summary } = traceStore
   let error = ''
@@ -50,6 +51,7 @@
 
   {#if $summary}
     <section class="timeline"><TimelineCanvas /></section>
+    <section class="graph"><GraphCanvas /></section>
   {:else}
     <section class="empty">Open a Go execution trace (.out) to begin.</section>
   {/if}
@@ -62,6 +64,7 @@
   button:disabled { opacity: 0.6; cursor: default; }
   .info { font-size: 13px; color: #8a93a3; }
   .error { color: #c25450; font-size: 13px; }
-  .timeline { flex: 1; overflow: auto; }
+  .timeline { flex: 0 0 42%; overflow: auto; border-bottom: 1px solid #2a2e38; }
+  .graph { flex: 1; min-height: 0; }
   .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #5b6270; }
 </style>
