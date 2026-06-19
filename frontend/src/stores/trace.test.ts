@@ -94,4 +94,27 @@ describe('createTraceStore playback', () => {
     s.setShowSystem(true)
     expect(get(s.showSystem)).toBe(true)
   })
+
+  it('play() is idempotent: calling it while already playing schedules one frame', () => {
+    const g = globalThis as unknown as {
+      requestAnimationFrame?: (cb: FrameRequestCallback) => number
+      cancelAnimationFrame?: (id: number) => void
+    }
+    const savedReq = g.requestAnimationFrame
+    const savedCancel = g.cancelAnimationFrame
+    let scheduled = 0
+    g.requestAnimationFrame = () => ++scheduled // do not invoke cb -> no real loop
+    g.cancelAnimationFrame = () => {}
+    try {
+      const s = createTraceStore()
+      s.loadSummary(summary)
+      s.play()
+      s.play() // second call must be ignored (already playing)
+      expect(scheduled).toBe(1)
+      expect(get(s.playing)).toBe(true)
+    } finally {
+      g.requestAnimationFrame = savedReq
+      g.cancelAnimationFrame = savedCancel
+    }
+  })
 })

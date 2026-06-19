@@ -2,6 +2,9 @@ import { writable, get, type Writable } from 'svelte/store'
 import type { TraceSummary } from '../lib/types'
 import { nextPlayhead } from '../lib/playback'
 
+// dt seed for the first animation frame after play/resume (~one 60fps frame).
+const SEED_FRAME_MS = 16
+
 export interface TraceStore {
   summary: Writable<TraceSummary | null>
   playhead: Writable<number>
@@ -43,7 +46,9 @@ export function createTraceStore(): TraceStore {
   }
 
   function frame(now: number) {
-    const dt = lastFrame === 0 ? 16 : now - lastFrame
+    // On the first frame after play()/resume there is no previous timestamp, so
+    // seed dt with one ~60fps frame instead of a huge now-0 jump.
+    const dt = lastFrame === 0 ? SEED_FRAME_MS : now - lastFrame
     lastFrame = now
     api.advance(dt)
     if (get(playing) && typeof requestAnimationFrame !== 'undefined') {
@@ -67,7 +72,9 @@ export function createTraceStore(): TraceStore {
       clampSet(t)
     },
     play() {
-      if (!current) return
+      // Idempotent: ignore if nothing is loaded or a frame loop is already running
+      // (prevents orphaning a scheduled rAF and double-stepping the playhead).
+      if (!current || get(playing)) return
       // Restart from the beginning if parked at the end.
       if (get(playhead) >= current.endTime) playhead.set(current.startTime)
       playing.set(true)
