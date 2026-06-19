@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { get } from 'svelte/store'
 import { createTraceStore } from './trace'
 import type { TraceSummary } from '../lib/types'
-import { nextPlayhead } from '../lib/playback'
 
 const summary: TraceSummary = {
   startTime: 100,
