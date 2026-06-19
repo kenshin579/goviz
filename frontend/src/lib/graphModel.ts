@@ -30,6 +30,11 @@ export function buildGraphModel(goroutines: Goroutine[], edges: CausalEdge[]): G
   const nodes: GraphNode[] = goroutines.map((g) => ({ id: g.id, label: goroutineLabel(g) }))
   const ids = new Set(nodes.map((n) => n.id))
 
+  // Dedup is directional (from->to): A->B and B->A are kept as distinct edges.
+  // When the same ordered pair fires repeatedly with different categories, the
+  // FIRST occurrence's category wins for the persistent layout link (later ones
+  // are dropped). Per-firing categories are still available via the raw edge
+  // list (activeEdges) for time-localized emphasis.
   const seen = new Set<string>()
   const links: GraphLink[] = []
   for (const e of edges) {

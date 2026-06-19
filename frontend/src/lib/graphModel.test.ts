@@ -8,7 +8,7 @@ const goroutines: Goroutine[] = [
 ]
 const edges: CausalEdge[] = [
   { from: 1, to: 2, time: 10, category: 'channel' },
-  { from: 1, to: 2, time: 20, category: 'channel' }, // duplicate pair
+  { from: 1, to: 2, time: 20, category: 'mutex' }, // duplicate pair, different category
   { from: 2, to: 9, time: 30, category: 'mutex' }, // 9 not in visible set -> dropped
 ]
 
@@ -20,9 +20,10 @@ describe('buildGraphModel', () => {
     expect(m.nodes[1].label).toBe('g2') // empty name fallback
   })
 
-  it('dedups links per pair and drops links to hidden goroutines', () => {
+  it('dedups links per pair (first category wins) and drops links to hidden goroutines', () => {
     const m = buildGraphModel(goroutines, edges)
     expect(m.links).toHaveLength(1)
+    // First occurrence's category is kept even though a later 1->2 edge is mutex.
     expect(m.links[0]).toMatchObject({ source: 1, target: 2, category: 'channel' })
   })
 
