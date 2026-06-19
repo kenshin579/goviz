@@ -38,3 +38,12 @@ go.work.sum
 
 # macOS
 .DS_Store
+
+# Wails
+build/bin
+frontend/node_modules
+frontend/dist/*
+!frontend/dist/gitkeep
+
+# Wails frontend build cache (per-machine)
+frontend/package.json.md5
