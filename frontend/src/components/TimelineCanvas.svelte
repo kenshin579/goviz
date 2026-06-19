@@ -3,43 +3,48 @@
   import { traceStore } from '../stores/trace'
   import { layoutTimeline, type Lane } from '../lib/timelineLayout'
   import { makeTimeScale } from '../lib/timeMap'
-  import type { TraceSummary } from '../lib/types'
 
   const { summary, playhead, setPlayhead } = traceStore
 
+  let container: HTMLDivElement
   let canvas: HTMLCanvasElement
-  let width = 800
-  let height = 400
+  let cssWidth = 800 // CSS (layout) pixel width of the time axis; tracked to the container
   const LANE_H = 18
   const LANE_GAP = 3
 
-  let lanes: Lane[] = []
-  let current: TraceSummary | null = null
   let dragging = false
 
-  summary.subscribe((s) => {
-    current = s
-    relayout()
-    draw()
-  })
-  playhead.subscribe(() => draw())
+  // Layout and height are derived reactively from the loaded summary and the
+  // current width. Using $summary/$playhead auto-subscriptions means Svelte
+  // owns subscription lifecycle (no manual leak).
+  $: lanes = $summary
+    ? layoutTimeline($summary, { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP })
+    : ([] as Lane[])
+  $: cssHeight = $summary
+    ? Math.max(400, $summary.goroutines.length * (LANE_H + LANE_GAP))
+    : 400
 
-  function relayout() {
-    if (!current) {
-      lanes = []
-      return
-    }
-    height = Math.max(400, current.goroutines.length * (LANE_H + LANE_GAP))
-    lanes = layoutTimeline(current, { width, laneHeight: LANE_H, laneGap: LANE_GAP })
-  }
+  // Redraw whenever any input to the picture changes. draw() no-ops until the
+  // canvas is mounted; onMount triggers the first real paint.
+  $: void [$playhead, lanes, cssWidth, cssHeight], draw()
 
   function draw() {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Size the bitmap to the CSS box so layout/pointer pixels share one
+    // coordinate space (the playhead must land under the cursor), and scale by
+    // devicePixelRatio for crisp lines. Setting canvas.width is a DOM op, not a
+    // reactive write, so this does not re-trigger the reactive block above.
+    const dpr = window.devicePixelRatio || 1
+    canvas.width = Math.round(cssWidth * dpr)
+    canvas.height = Math.round(cssHeight * dpr)
+    canvas.style.height = cssHeight + 'px'
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
     ctx.fillStyle = '#0f1117'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillRect(0, 0, cssWidth, cssHeight)
 
     for (const lane of lanes) {
       for (const r of lane.rects) {
@@ -48,24 +53,22 @@
       }
     }
 
-    if (current) {
-      const scale = makeTimeScale(current.startTime, current.endTime, 0, width)
-      let ph = 0
-      playhead.subscribe((v) => (ph = v))()
-      const x = scale.toPixel(ph)
+    if ($summary) {
+      const scale = makeTimeScale($summary.startTime, $summary.endTime, 0, cssWidth)
+      const x = scale.toPixel($playhead)
       ctx.strokeStyle = '#5b8def'
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.moveTo(x, 0)
-      ctx.lineTo(x, height)
+      ctx.lineTo(x, cssHeight)
       ctx.stroke()
     }
   }
 
   function timeAtClientX(clientX: number): number {
-    if (!current) return 0
+    if (!$summary) return 0
     const rect = canvas.getBoundingClientRect()
-    const scale = makeTimeScale(current.startTime, current.endTime, 0, width)
+    const scale = makeTimeScale($summary.startTime, $summary.endTime, 0, cssWidth)
     return scale.toTime(clientX - rect.left)
   }
 
@@ -81,18 +84,32 @@
   }
 
   onMount(() => {
-    relayout()
+    const measure = () => {
+      cssWidth = container.clientWidth || cssWidth
+    }
+    measure()
     draw()
+    const ro = new ResizeObserver(measure)
+    ro.observe(container)
     window.addEventListener('pointerup', onPointerUp)
-    return () => window.removeEventListener('pointerup', onPointerUp)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('pointerup', onPointerUp)
+    }
   })
 </script>
 
-<canvas
-  bind:this={canvas}
-  {width}
-  {height}
-  on:pointerdown={onPointerDown}
-  on:pointermove={onPointerMove}
-  style="width:100%; cursor: ew-resize; display:block;"
-></canvas>
+<div bind:this={container} class="timeline-canvas-wrap">
+  <canvas
+    bind:this={canvas}
+    on:pointerdown={onPointerDown}
+    on:pointermove={onPointerMove}
+    style="width:100%; cursor: ew-resize; display:block;"
+  ></canvas>
+</div>
+
+<style>
+  .timeline-canvas-wrap {
+    width: 100%;
+  }
+</style>
