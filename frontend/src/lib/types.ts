@@ -17,11 +17,13 @@ export interface Goroutine {
   intervals: Interval[]
 }
 
+export type EdgeCategory = 'channel' | 'mutex' | 'other'
+
 export interface CausalEdge {
   from: number
   to: number
   time: number
-  category: 'channel' | 'mutex' | 'other'
+  category: EdgeCategory
 }
 
 export interface TraceSummary {
