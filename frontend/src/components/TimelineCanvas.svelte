@@ -4,6 +4,8 @@
   import { layoutTimeline, type Lane } from '../lib/timelineLayout'
   import { makeTimeScale } from '../lib/timeMap'
   import { visibleGoroutines } from '../lib/filter'
+  import { hitTimeline } from '../lib/hit'
+  import { intervalTooltip } from '../lib/tooltip'
 
   const { summary, playhead, showSystem, selectedId, setPlayhead } = traceStore
 
@@ -14,6 +16,7 @@
   const LANE_GAP = 3
 
   let dragging = false
+  let tip: { text: string; x: number; y: number } | null = null
 
   // Layout and height are derived reactively from the loaded summary and the
   // current width. Using $summary/$playhead auto-subscriptions means Svelte
@@ -91,7 +94,23 @@
     setPlayhead(timeAtClientX(e.clientX))
   }
   function onPointerMove(e: PointerEvent) {
-    if (dragging) setPlayhead(timeAtClientX(e.clientX))
+    if (dragging) {
+      setPlayhead(timeAtClientX(e.clientX))
+      tip = null
+      return
+    }
+    const rect = canvas.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const h = hitTimeline(lanes, x, y, LANE_H + LANE_GAP, LANE_H)
+    if (h && h.rect) {
+      tip = { text: intervalTooltip(h.lane.label, h.rect.state, h.rect.blockReason), x, y }
+    } else {
+      tip = null
+    }
+  }
+  function onPointerLeave() {
+    tip = null
   }
   function onPointerUp() {
     dragging = false
@@ -113,17 +132,23 @@
   })
 </script>
 
-<div bind:this={container} class="timeline-canvas-wrap">
+<div bind:this={container} class="timeline-canvas-wrap" on:pointerleave={onPointerLeave}>
   <canvas
     bind:this={canvas}
     on:pointerdown={onPointerDown}
     on:pointermove={onPointerMove}
     style="width:100%; cursor: ew-resize; display:block;"
   ></canvas>
+  {#if tip}
+    <div class="tip" style="left:{tip.x + 12}px; top:{tip.y + 12}px">{tip.text}</div>
+  {/if}
 </div>
 
 <style>
-  .timeline-canvas-wrap {
-    width: 100%;
+  .timeline-canvas-wrap { width: 100%; position: relative; }
+  .tip {
+    position: absolute; pointer-events: none; white-space: pre; z-index: 10;
+    background: #161922; color: #cdd3df; border: 1px solid #2a2e38;
+    border-radius: 4px; padding: 4px 8px; font-size: 12px; line-height: 1.35;
   }
 </style>
