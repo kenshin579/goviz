@@ -50,7 +50,7 @@ trace.out → internal/parse.Parse → model.TraceSummary (JSON) → app.OpenTra
 - **Data-contract quirks the frontend must honor:** `name` is often `""` (main + goroutines alive at trace start) → fall back to `g<id>` (`goroutineLabel`); `endedAt === 0` is a "never ended" sentinel (≠ a real time) → extend to `endTime` (`effectiveEnd`); times are large absolute ns → normalize against `startTime` for display; a `Blocked` interval's `blockReason` may be empty; parked `runtime.*` goroutines often only appear near the trace end (their pre-history isn't in the trace — do not fabricate it) and are filtered by default via `isSystemGoroutine`.
 - **Edges are inferred, not authoritative:** the trace has no channel identity or transferred values. UI labels causal edges "(inferred)" on purpose (`tooltip.ts`) — preserve that honesty.
 - **Tests are invariant-based, not golden:** goroutine scheduling is nondeterministic, so Go parser tests generate a trace in-process and assert structural invariants (e.g. "an unbuffered rendezvous always yields a `chan` Blocked interval and a Channel causal edge"), never exact event sequences. Keep new tests in this style.
-- **Go version:** the `go` directive is `1.25.0` because the pinned `golang.org/x/exp` requires it; the trace format support is Go 1.22+ only (old-format traces are rejected by the reader).
+- **Go version:** the `go` directive is `1.26.4` (matches the dev toolchain; the pinned `golang.org/x/exp` requires ≥1.25); the trace format support is Go 1.22+ only (old-format traces are rejected by the reader).
 
 ## Workflow conventions
 
