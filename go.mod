@@ -1,6 +1,6 @@
 module github.com/kenshin579/trace-go
 
-go 1.25.0
+go 1.26.4
 
 require (
 	github.com/wailsapp/wails/v2 v2.11.0

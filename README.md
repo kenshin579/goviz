@@ -21,7 +21,7 @@ The Go execution trace records *that* one goroutine unblocked another and *why i
 
 ## Requirements
 
-- Go 1.25+ (the module's toolchain requirement; trace *format* support is Go 1.22+)
+- Go 1.26+ (the module's `go` directive; trace *format* support is Go 1.22+)
 - [Wails v2](https://wails.io) CLI, Node.js, and a C toolchain (for building the desktop app)
 
 ## Build & run
