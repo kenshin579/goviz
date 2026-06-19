@@ -1,5 +1,5 @@
 import { makeTimeScale } from './timeMap'
-import { goroutineLabel, effectiveEnd, stateColor, type IntervalState } from './format'
+import { goroutineLabel, stateColor, type IntervalState } from './format'
 import type { TraceSummary } from './types'
 
 export interface LayoutRect {
@@ -31,9 +31,12 @@ export function layoutTimeline(summary: TraceSummary, opts: LayoutOptions): Lane
   const scale = makeTimeScale(summary.startTime, summary.endTime, 0, opts.width)
   return summary.goroutines.map((g, i) => {
     const rects: LayoutRect[] = g.intervals.map((iv) => {
-      const end = iv.end === 0 ? effectiveEnd(g, summary.endTime) : iv.end
+      // The parser always sets a real Interval.End (a state-transition time, or
+      // the trace end for still-open intervals); only Goroutine.endedAt uses the
+      // 0 "never ended" sentinel. So iv.end is used directly here. Goroutine
+      // lifetime (effectiveEnd) is a lane-level concern, not per-interval.
       const x = scale.toPixel(iv.start)
-      const rawWidth = scale.toPixel(end) - x
+      const rawWidth = scale.toPixel(iv.end) - x
       return {
         x,
         width: Math.max(1, rawWidth),

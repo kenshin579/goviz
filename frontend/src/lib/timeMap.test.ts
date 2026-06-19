@@ -20,5 +20,8 @@ describe('makeTimeScale', () => {
     const s = makeTimeScale(1000, 1000, 0, 500)
     expect(Number.isFinite(s.toPixel(1000))).toBe(true)
     expect(Number.isFinite(s.toTime(250))).toBe(true)
+    // Documented contract: collapses to rangeStart / domainStart.
+    expect(s.toPixel(9999)).toBe(0)
+    expect(s.toTime(9999)).toBe(1000)
   })
 })
