@@ -45,7 +45,7 @@
 
   $: chain = $summary && $selectedId !== null ? causalNeighbors($summary.edges, $selectedId) : null
 
-  $: void [$playhead, lanes, cssWidth, cssHeight, $selectedId, taskTrack, chain], draw()
+  $: void [$playhead, lanes, cssWidth, cssHeight, $selectedId, taskTrack], draw()
 
   function fitLabel(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
     if (ctx.measureText(text).width <= maxW) return text
