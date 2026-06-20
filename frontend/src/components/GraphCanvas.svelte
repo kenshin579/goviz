@@ -117,8 +117,8 @@
   }
 
   // Redraw (recolor + comets) on time/selection change. Does NOT touch the sim.
-  $: chain = $summary && $selectedId != null ? causalNeighbors($summary.edges, $selectedId) : null
-  $: void [$playhead, $selectedId, chain], draw()
+  $: chain = $summary && $selectedId !== null ? causalNeighbors($summary.edges, $selectedId) : null
+  $: void [$playhead, $selectedId], draw()
 
   function draw() {
     if (!canvas) return
@@ -182,6 +182,8 @@
       const tg = l.target as unknown as GraphNode
       if (s.x == null || tg.x == null) continue
       if (chain) {
+        // Incident = directly touches the selected node (its unblockers/unblockees);
+        // edges between two chain peers are intentionally not emphasized.
         const incident = s.id === $selectedId || tg.id === $selectedId
         ctx.globalAlpha = incident ? 1 : GHOST_ALPHA
         ctx.strokeStyle = incident ? categoryColor(l.category) : DIM_COLOR
