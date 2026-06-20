@@ -48,6 +48,19 @@ func scenarioRegionsLogs() {
 	})
 }
 
+// scenarioTasks emits a parent task with a nested child task, each wrapping a
+// region, so the parse output has tasks + region->task links.
+func scenarioTasks() {
+	ctx := context.Background()
+	ctx, parent := trace.NewTask(ctx, "request")
+	trace.WithRegion(ctx, "handle", func() {
+		cctx, child := trace.NewTask(ctx, "db-batch")
+		trace.WithRegion(cctx, "db-query", func() {})
+		child.End()
+	})
+	parent.End()
+}
+
 // scenarioMutexContention: many goroutines contend for a single mutex,
 // forcing some to block on sync.Mutex.Lock and be woken by the unlocker.
 func scenarioMutexContention() {
