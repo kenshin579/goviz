@@ -5,6 +5,28 @@ import (
 	"testing"
 )
 
+func TestTaskJSON(t *testing.T) {
+	sum := TraceSummary{
+		Tasks: []Task{{ID: 5, Parent: 1, Name: "request", Start: 10, End: 90}},
+		Goroutines: []Goroutine{{ID: 1, Regions: []Region{{Name: "r", Task: 5}}}},
+		Logs:       []Log{{Time: 20, GoID: 1, Category: "c", Message: "m", Task: 5}},
+	}
+	b, err := json.Marshal(sum)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out TraceSummary
+	if err := json.Unmarshal(b, &out); err != nil {
+		t.Fatal(err)
+	}
+	if out.Tasks[0].Name != "request" || out.Tasks[0].Parent != 1 {
+		t.Fatalf("task round trip: %+v", out.Tasks)
+	}
+	if out.Goroutines[0].Regions[0].Task != 5 || out.Logs[0].Task != 5 {
+		t.Fatalf("task id link lost: %+v / %+v", out.Goroutines[0].Regions, out.Logs)
+	}
+}
+
 func TestRegionAndLogJSON(t *testing.T) {
 	sum := TraceSummary{
 		Goroutines: []Goroutine{{

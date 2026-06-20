@@ -36,6 +36,7 @@ type Region struct {
 	End   Time   `json:"end"`
 	Name  string `json:"name"`  // the region type string passed to WithRegion
 	Depth int    `json:"depth"` // nesting depth, 0 = outermost
+	Task  uint64 `json:"task"`  // owning task id (0 = none/background)
 }
 
 // Log is a point-in-time event from a runtime/trace.Log/Logf call.
@@ -44,6 +45,17 @@ type Log struct {
 	GoID     int64  `json:"goId"`
 	Category string `json:"category"`
 	Message  string `json:"message"`
+	Task     uint64 `json:"task"`
+}
+
+// Task is a runtime/trace.NewTask logical operation: a time span that may cross
+// goroutines and nest under a parent task.
+type Task struct {
+	ID     uint64 `json:"id"`
+	Parent uint64 `json:"parent"`
+	Name   string `json:"name"`
+	Start  Time   `json:"start"`
+	End    Time   `json:"end"`
 }
 
 // Goroutine is one goroutine's full lifetime and timeline.
@@ -82,4 +94,5 @@ type TraceSummary struct {
 	Goroutines []Goroutine  `json:"goroutines"`
 	Edges      []CausalEdge `json:"edges"`
 	Logs       []Log        `json:"logs,omitempty"`
+	Tasks      []Task       `json:"tasks,omitempty"`
 }
