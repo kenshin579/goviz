@@ -20,6 +20,7 @@
   import type { Goroutine, CausalEdge } from '../lib/types'
   import { nodeAtPoint, distToSegment } from '../lib/hit'
   import { nodeTooltip, edgeTooltip } from '../lib/tooltip'
+  import { causalNeighbors } from '../lib/causalFocus'
 
   const { summary, playhead, showSystem, selectedId } = traceStore
 
@@ -27,6 +28,7 @@
   let canvas: HTMLCanvasElement
   let cssWidth = 600
   let cssHeight = 360
+  const GHOST_ALPHA = 0.15
 
   let nodes: GraphNode[] = []
   let links: GraphLink[] = []
@@ -115,7 +117,8 @@
   }
 
   // Redraw (recolor + comets) on time/selection change. Does NOT touch the sim.
-  $: void [$playhead, $selectedId], draw()
+  $: chain = $summary && $selectedId != null ? causalNeighbors($summary.edges, $selectedId) : null
+  $: void [$playhead, $selectedId, chain], draw()
 
   function draw() {
     if (!canvas) return
@@ -171,25 +174,38 @@
     const win = span * 0.03
     const active = $summary ? new Set(activeEdges($summary.edges, t, win).map((e) => `${e.from}->${e.to}`)) : new Set<string>()
 
-    // Edges first (under nodes). Active edges take their (inferred) category color.
+    // Edges first (under nodes). When a node is selected, focus mode emphasizes
+    // the selected node's incident (chain) edges and ghosts the rest; otherwise
+    // the playhead-window "active" coloring applies.
     for (const l of links) {
       const s = l.source as unknown as GraphNode
       const tg = l.target as unknown as GraphNode
       if (s.x == null || tg.x == null) continue
-      const isActive = active.has(`${s.id}->${tg.id}`)
-      ctx.strokeStyle = isActive ? categoryColor(l.category) : DIM_COLOR
-      ctx.lineWidth = isActive ? 2.5 : 1
+      if (chain) {
+        const incident = s.id === $selectedId || tg.id === $selectedId
+        ctx.globalAlpha = incident ? 1 : GHOST_ALPHA
+        ctx.strokeStyle = incident ? categoryColor(l.category) : DIM_COLOR
+        ctx.lineWidth = incident ? 2.5 : 1
+      } else {
+        const isActive = active.has(`${s.id}->${tg.id}`)
+        ctx.globalAlpha = 1
+        ctx.strokeStyle = isActive ? categoryColor(l.category) : DIM_COLOR
+        ctx.lineWidth = isActive ? 2.5 : 1
+      }
       ctx.beginPath()
       ctx.moveTo(s.x, s.y!)
       ctx.lineTo(tg.x, tg.y!)
       ctx.stroke()
     }
+    ctx.globalAlpha = 1
 
-    // Nodes.
+    // Nodes. In focus mode, non-chain nodes are ghosted; chain nodes keep their
+    // state-at-t color and the selected node keeps its ring.
     for (const n of nodes) {
       if (n.x == null) continue
       const g = goroutineById.get(n.id)
       const st = g ? stateAt(g, t) : null
+      ctx.globalAlpha = chain && !chain.has(n.id) ? GHOST_ALPHA : 1
       ctx.fillStyle = st ? stateColor(st) : DIM_COLOR // dim if not alive at t
       ctx.beginPath()
       ctx.arc(n.x, n.y!, 9, 0, Math.PI * 2)
@@ -200,6 +216,7 @@
         ctx.stroke()
       }
     }
+    ctx.globalAlpha = 1
 
     // Comets + arrival rings (on top).
     const nowMs = typeof performance !== 'undefined' ? performance.now() : 0
