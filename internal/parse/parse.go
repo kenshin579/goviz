@@ -222,7 +222,7 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 		}
 		for _, reg := range b.regionStack {
 			b.g.Regions = append(b.g.Regions, model.Region{
-				Start: reg.start, End: maxT, Name: reg.name, Depth: reg.depth,
+				Start: reg.start, End: maxT, Name: reg.name, Depth: reg.depth, Task: reg.task,
 			})
 		}
 		b.regionStack = nil
