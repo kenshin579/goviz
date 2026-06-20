@@ -39,7 +39,7 @@
 
 <main>
   <header>
-    <button on:click={open} disabled={loading}>Open trace…</button>
+    <button class="open-btn" on:click={open} disabled={loading}>Open trace…</button>
     {#if $summary}
       <span class="info">
         {$summary.goroutines.length} goroutines · {$summary.edges.length} edges ·
@@ -47,8 +47,14 @@
       </span>
       <Controls />
     {/if}
-    {#if error}<span class="error">{error}</span>{/if}
   </header>
+
+  {#if error}
+    <div class="error-banner" role="alert">
+      <span class="error-text">{error}</span>
+      <button class="dismiss" on:click={() => (error = '')} aria-label="Dismiss error">×</button>
+    </div>
+  {/if}
 
   {#if $summary}
     <section class="timeline"><TimelineCanvas /></section>
@@ -62,10 +68,19 @@
 <style>
   main { font-family: system-ui, sans-serif; color: #cdd3df; background: #0f1117; height: 100vh; display: flex; flex-direction: column; }
   header { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #2a2e38; }
-  button { background: #5b8def; color: white; border: 0; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
-  button:disabled { opacity: 0.6; cursor: default; }
+  .open-btn { background: #5b8def; color: white; border: 0; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  .open-btn:disabled { opacity: 0.6; cursor: default; }
   .info { font-size: 13px; color: #8a93a3; }
-  .error { color: #c25450; font-size: 13px; }
+  .error-banner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px; background: #3a2326; border-bottom: 1px solid #5e2f33;
+    color: #f0b7b3; font-size: 13px;
+  }
+  .error-text { flex: 1; }
+  .dismiss {
+    background: transparent; border: 0; color: #f0b7b3; cursor: pointer;
+    font-size: 18px; line-height: 1; padding: 0 4px;
+  }
   .timeline { flex: 0 0 42%; overflow: auto; border-bottom: 1px solid #2a2e38; }
   .graph { flex: 1; min-height: 0; }
   .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #5b6270; }
