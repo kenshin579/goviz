@@ -23,6 +23,7 @@ export namespace model {
 	    end: number;
 	    name: string;
 	    depth: number;
+	    task: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Region(source);
@@ -34,6 +35,7 @@ export namespace model {
 	        this.end = source["end"];
 	        this.name = source["name"];
 	        this.depth = source["depth"];
+	        this.task = source["task"];
 	    }
 	}
 	export class Interval {
@@ -100,6 +102,7 @@ export namespace model {
 	    goId: number;
 	    category: string;
 	    message: string;
+	    task: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Log(source);
@@ -111,15 +114,37 @@ export namespace model {
 	        this.goId = source["goId"];
 	        this.category = source["category"];
 	        this.message = source["message"];
+	        this.task = source["task"];
 	    }
 	}
 	
+	export class Task {
+	    id: number;
+	    parent: number;
+	    name: string;
+	    start: number;
+	    end: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Task(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.parent = source["parent"];
+	        this.name = source["name"];
+	        this.start = source["start"];
+	        this.end = source["end"];
+	    }
+	}
 	export class TraceSummary {
 	    startTime: number;
 	    endTime: number;
 	    goroutines: Goroutine[];
 	    edges: CausalEdge[];
 	    logs?: Log[];
+	    tasks?: Task[];
 	
 	    static createFrom(source: any = {}) {
 	        return new TraceSummary(source);
@@ -132,6 +157,7 @@ export namespace model {
 	        this.goroutines = this.convertValues(source["goroutines"], Goroutine);
 	        this.edges = this.convertValues(source["edges"], CausalEdge);
 	        this.logs = this.convertValues(source["logs"], Log);
+	        this.tasks = this.convertValues(source["tasks"], Task);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

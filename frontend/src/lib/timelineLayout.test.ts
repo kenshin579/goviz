@@ -90,6 +90,23 @@ describe('layoutTimeline gutter', () => {
   })
 })
 
+describe('layoutTimeline topOffset', () => {
+  const summary = {
+    startTime: 0, endTime: 100,
+    goroutines: [{ id: 1, name: 'a', createdAt: 0, endedAt: 100, intervals: [{ start: 0, end: 100, state: 'running', blockReason: '' }] }],
+    edges: [],
+  } as any
+
+  it('starts the first lane below the top offset', () => {
+    const lanes = layoutTimeline(summary, { width: 200, laneHeight: 18, laneGap: 4, topOffset: 30 })
+    expect(lanes[0].y).toBe(30)
+  })
+  it('defaults to no offset', () => {
+    const lanes = layoutTimeline(summary, { width: 200, laneHeight: 18, laneGap: 4 })
+    expect(lanes[0].y).toBe(0)
+  })
+})
+
 describe('layoutTimeline regions and logs', () => {
   const summary = {
     startTime: 0,

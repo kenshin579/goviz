@@ -42,6 +42,7 @@ export interface LayoutOptions {
   laneGap: number
   gutter?: number // left offset reserved for lane labels
   regionRowH?: number // height of one region sub-row (0/undefined => no region rows)
+  topOffset?: number // reserved space above the first lane (e.g. a task track)
 }
 
 // layoutTimeline maps the trace span onto [gutter, width] and stacks one lane per
@@ -60,7 +61,7 @@ export function layoutTimeline(summary: TraceSummary, opts: LayoutOptions): Lane
   }
 
   const lanes: Lane[] = []
-  let y = 0
+  let y = opts.topOffset ?? 0
   for (const g of summary.goroutines) {
     const rects: LayoutRect[] = (g.intervals ?? []).map((iv) => {
       const x = scale.toPixel(iv.start)

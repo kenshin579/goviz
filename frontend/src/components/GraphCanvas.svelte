@@ -6,13 +6,16 @@
     forceLink,
     forceCenter,
     forceCollide,
+    forceX,
+    forceY,
     type Simulation,
   } from 'd3-force'
   import { traceStore } from '../stores/trace'
   import { visibleGoroutines } from '../lib/filter'
   import { buildGraphModel, type GraphNode, type GraphLink } from '../lib/graphModel'
   import { stateAt, activeEdges } from '../lib/activeAt'
-  import { stateColor, DIM_COLOR, categoryColor, goroutineLabel } from '../lib/format'
+  import { stateColor, DIM_COLOR, categoryColor, goroutineLabel, taskColor } from '../lib/format'
+  import { clusterByTask, convexHull } from '../lib/graphCluster'
   import { edgesCrossed, cometPoint, FLASH_MS, MAX_PARTICLES } from '../lib/flash'
   import type { Goroutine, CausalEdge } from '../lib/types'
   import { nodeAtPoint, distToSegment } from '../lib/hit'
@@ -29,6 +32,7 @@
   let links: GraphLink[] = []
   let goroutineById = new Map<number, Goroutine>()
   let nodeById = new Map<number, GraphNode>()
+  let clusterSeeds = new Map<number, { x: number; y: number }>()
   let sim: Simulation<GraphNode, GraphLink> | undefined
   let tip: { text: string; x: number; y: number } | null = null
 
@@ -48,6 +52,15 @@
     nodes = model.nodes
     links = model.links
     nodeById = new Map(nodes.map((n) => [n.id, n]))
+    const known = new Set(($summary?.tasks ?? []).map((t) => t.id))
+    const clusters = clusterByTask(goroutines, known)
+    for (const n of nodes) n.cluster = clusters.get(n.id)
+    const clusterIds = [...new Set([...clusters.values()])]
+    clusterSeeds = new Map()
+    clusterIds.forEach((cid, i) => {
+      const ang = clusterIds.length ? (i / clusterIds.length) * Math.PI * 2 : 0
+      clusterSeeds.set(cid, { x: cssWidth / 2 + Math.cos(ang) * cssWidth * 0.28, y: cssHeight / 2 + Math.sin(ang) * cssHeight * 0.28 })
+    })
     comets = []
     prevT = null // re-arm crossing detection for the new node set
     sim?.stop()
@@ -60,6 +73,8 @@
       .force('link', forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(60))
       .force('center', forceCenter(cssWidth / 2, cssHeight / 2))
       .force('collide', forceCollide(16))
+      .force('cx', forceX<GraphNode>((n) => (n.cluster != null ? clusterSeeds.get(n.cluster)!.x : cssWidth / 2)).strength((n) => (n.cluster != null ? 0.2 : 0.03)))
+      .force('cy', forceY<GraphNode>((n) => (n.cluster != null ? clusterSeeds.get(n.cluster)!.y : cssHeight / 2)).strength((n) => (n.cluster != null ? 0.2 : 0.03)))
       .on('tick', draw)
   }
 
@@ -113,6 +128,43 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = '#0f1117'
     ctx.fillRect(0, 0, cssWidth, cssHeight)
+
+    // Static task-cluster hulls (background layer).
+    const byCluster = new Map<number, GraphNode[]>()
+    for (const n of nodes) {
+      if (n.cluster == null || n.x == null) continue
+      const arr = byCluster.get(n.cluster)
+      if (arr) arr.push(n)
+      else byCluster.set(n.cluster, [n])
+    }
+    const taskName = new Map<number, string>(($summary?.tasks ?? []).map((t) => [t.id, t.name]))
+    for (const [cid, members] of byCluster) {
+      const pts = members.map((n) => [n.x!, n.y!] as [number, number])
+      const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length
+      const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length
+      const padded = pts.map(([px, py]) => {
+        const dx = px - cx
+        const dy = py - cy
+        const len = Math.hypot(dx, dy) || 1
+        return [px + (dx / len) * 22, py + (dy / len) * 22] as [number, number]
+      })
+      const hull = convexHull(padded)
+      if (hull.length >= 3) {
+        ctx.beginPath()
+        ctx.moveTo(hull[0][0], hull[0][1])
+        for (let i = 1; i < hull.length; i++) ctx.lineTo(hull[i][0], hull[i][1])
+        ctx.closePath()
+        ctx.fillStyle = taskColor(cid) + '22'
+        ctx.fill()
+        ctx.strokeStyle = taskColor(cid)
+        ctx.lineWidth = 1.5
+        ctx.stroke()
+      }
+      ctx.fillStyle = taskColor(cid)
+      ctx.font = '10px system-ui, sans-serif'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillText(taskName.get(cid) ?? `task ${cid}`, cx - 20, cy - 24)
+    }
 
     const t = $playhead
     const span = $summary ? $summary.endTime - $summary.startTime : 0

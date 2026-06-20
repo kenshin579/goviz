@@ -2,10 +2,12 @@
   import { onMount } from 'svelte'
   import { traceStore } from '../stores/trace'
   import { layoutTimeline, type Lane } from '../lib/timelineLayout'
+  import { layoutTaskTrack, type TaskBar } from '../lib/taskTrack'
   import { makeTimeScale } from '../lib/timeMap'
   import { visibleGoroutines } from '../lib/filter'
   import { hitTimeline } from '../lib/hit'
-  import { intervalTooltip, regionTooltip, logTooltip } from '../lib/tooltip'
+  import { intervalTooltip, regionTooltip, logTooltip, taskTooltip } from '../lib/tooltip'
+  import { taskColor } from '../lib/format'
 
   const { summary, playhead, showSystem, selectedId, setPlayhead } = traceStore
 
@@ -18,22 +20,28 @@
   const REGION_ROW_H = 9
   const REGION_COLOR = '#5a6b8c'
   const LOG_COLOR = '#e0c030'
+  const TASK_ROW_H = 14
 
   let dragging = false
   let tip: { text: string; x: number; y: number } | null = null
 
   $: visible = $summary ? visibleGoroutines($summary, $showSystem) : []
+  $: taskTrack = $summary
+    ? layoutTaskTrack($summary.tasks ?? [], {
+        width: cssWidth, gutter: GUTTER_W, startTime: $summary.startTime, endTime: $summary.endTime, taskRowH: TASK_ROW_H,
+      })
+    : { bars: [] as TaskBar[], height: 0 }
   $: lanes = $summary
     ? layoutTimeline(
         { ...$summary, goroutines: visible },
-        { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP, gutter: GUTTER_W, regionRowH: REGION_ROW_H },
+        { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP, gutter: GUTTER_W, regionRowH: REGION_ROW_H, topOffset: taskTrack.height },
       )
     : ([] as Lane[])
   $: cssHeight = lanes.length
     ? Math.max(400, lanes[lanes.length - 1].y + lanes[lanes.length - 1].totalHeight)
     : 400
 
-  $: void [$playhead, lanes, cssWidth, cssHeight, $selectedId], draw()
+  $: void [$playhead, lanes, cssWidth, cssHeight, $selectedId, taskTrack], draw()
 
   function fitLabel(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
     if (ctx.measureText(text).width <= maxW) return text
@@ -55,6 +63,24 @@
 
     ctx.fillStyle = '#0f1117'
     ctx.fillRect(0, 0, cssWidth, cssHeight)
+
+    // Task track (top): bars by parent depth + a gutter label.
+    if (taskTrack.bars.length) {
+      ctx.font = '9px system-ui, sans-serif'
+      ctx.textBaseline = 'middle'
+      for (const bar of taskTrack.bars) {
+        const by = bar.depth * TASK_ROW_H
+        ctx.fillStyle = taskColor(bar.id)
+        ctx.fillRect(bar.x, by + 1, bar.width, TASK_ROW_H - 2)
+        if (bar.width > 16) {
+          ctx.fillStyle = '#0f1117'
+          ctx.fillText(fitLabel(ctx, bar.name, bar.width - 4), bar.x + 3, by + TASK_ROW_H / 2)
+        }
+      }
+      ctx.fillStyle = '#8a93a3'
+      ctx.font = '10px system-ui, sans-serif'
+      ctx.fillText('TASKS', 4, TASK_ROW_H / 2)
+    }
 
     // State bars.
     for (const lane of lanes) {
@@ -144,6 +170,12 @@
     const rect = canvas.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
+    if (taskTrack.bars.length && y < taskTrack.height) {
+      const depth = Math.floor(y / TASK_ROW_H)
+      const bar = taskTrack.bars.find((b) => b.depth === depth && x >= b.x && x < b.x + b.width)
+      tip = bar ? { text: taskTooltip(bar.name, bar.start, bar.end), x, y } : null
+      return
+    }
     const h = hitTimeline(lanes, x, y, REGION_ROW_H)
     if (!h) {
       tip = null

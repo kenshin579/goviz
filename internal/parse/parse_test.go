@@ -8,6 +8,44 @@ import (
 	"github.com/kenshin579/trace-go/internal/parse"
 )
 
+func TestParseTasks(t *testing.T) {
+	r := genTrace(t, scenarioTasks)
+	sum, err := parse.Parse(r)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	var parent, child *model.Task
+	for ti := range sum.Tasks {
+		switch sum.Tasks[ti].Name {
+		case "request":
+			parent = &sum.Tasks[ti]
+		case "db-batch":
+			child = &sum.Tasks[ti]
+		}
+	}
+	if parent == nil || child == nil {
+		t.Fatalf("expected 'request' and 'db-batch' tasks, got %+v", sum.Tasks)
+	}
+	if child.Parent != parent.ID {
+		t.Fatalf("child.Parent=%d, want %d", child.Parent, parent.ID)
+	}
+	if parent.End < parent.Start {
+		t.Fatalf("task end before start: %+v", parent)
+	}
+	// At least one region must be linked to a task.
+	linked := false
+	for _, g := range sum.Goroutines {
+		for _, reg := range g.Regions {
+			if reg.Task != 0 {
+				linked = true
+			}
+		}
+	}
+	if !linked {
+		t.Fatal("expected at least one region linked to a task")
+	}
+}
+
 func TestParseProducesBlockedChannelInterval(t *testing.T) {
 	r := genTrace(t, scenarioSendRecv)
 	sum, err := parse.Parse(r)

@@ -10,6 +10,7 @@ export interface GraphNode {
   y?: number
   vx?: number
   vy?: number
+  cluster?: number // task id this node is statically grouped under (set by the view)
 }
 
 export interface GraphLink {

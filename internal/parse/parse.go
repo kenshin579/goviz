@@ -18,6 +18,7 @@ type openRegion struct {
 	name  string
 	start model.Time
 	depth int
+	task  uint64
 }
 
 // gobuilder accumulates the in-progress state for one goroutine. openStart and
@@ -49,6 +50,7 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 	builders := map[int64]*gobuilder{}
 	var edges []model.CausalEdge
 	var logs []model.Log
+	tasks := map[uint64]*model.Task{}
 	var minT, maxT model.Time
 	haveTime := false
 
@@ -91,6 +93,7 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 					name:  ev.Region().Type,
 					start: now,
 					depth: len(b.regionStack),
+					task:  uint64(ev.Region().Task),
 				})
 			}
 			continue
@@ -102,7 +105,7 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 					reg := b.regionStack[n-1]
 					b.regionStack = b.regionStack[:n-1]
 					b.g.Regions = append(b.g.Regions, model.Region{
-						Start: reg.start, End: now, Name: reg.name, Depth: reg.depth,
+						Start: reg.start, End: now, Name: reg.name, Depth: reg.depth, Task: reg.task,
 					})
 				}
 			}
@@ -112,8 +115,28 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 			// frontend groups logs by GoID, so it simply won't attach to a lane.
 			lg := ev.Log()
 			logs = append(logs, model.Log{
-				Time: now, GoID: int64(ev.Goroutine()), Category: lg.Category, Message: lg.Message,
+				Time: now, GoID: int64(ev.Goroutine()), Category: lg.Category, Message: lg.Message, Task: uint64(lg.Task),
 			})
+			continue
+		case exptrace.EventTaskBegin:
+			tk := ev.Task()
+			t := tasks[uint64(tk.ID)]
+			if t == nil {
+				t = &model.Task{ID: uint64(tk.ID)}
+				tasks[uint64(tk.ID)] = t
+			}
+			t.Parent = uint64(tk.Parent)
+			t.Name = tk.Type
+			t.Start = now
+			continue
+		case exptrace.EventTaskEnd:
+			tk := ev.Task()
+			t := tasks[uint64(tk.ID)]
+			if t == nil {
+				t = &model.Task{ID: uint64(tk.ID), Parent: uint64(tk.Parent), Name: tk.Type, Start: minT}
+				tasks[uint64(tk.ID)] = t
+			}
+			t.End = now
 			continue
 		}
 
@@ -199,7 +222,7 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 		}
 		for _, reg := range b.regionStack {
 			b.g.Regions = append(b.g.Regions, model.Region{
-				Start: reg.start, End: maxT, Name: reg.name, Depth: reg.depth,
+				Start: reg.start, End: maxT, Name: reg.name, Depth: reg.depth, Task: reg.task,
 			})
 		}
 		b.regionStack = nil
@@ -218,12 +241,23 @@ func Parse(r io.Reader) (*model.TraceSummary, error) {
 	sort.Slice(gs, func(i, j int) bool { return gs[i].ID < gs[j].ID })
 
 	sort.Slice(logs, func(i, j int) bool { return logs[i].Time < logs[j].Time })
+
+	taskList := make([]model.Task, 0, len(tasks))
+	for _, t := range tasks {
+		if t.End == 0 {
+			t.End = maxT // unended task: extend to trace end
+		}
+		taskList = append(taskList, *t)
+	}
+	sort.Slice(taskList, func(i, j int) bool { return taskList[i].Start < taskList[j].Start })
+
 	return &model.TraceSummary{
 		StartTime:  minT,
 		EndTime:    maxT,
 		Goroutines: gs,
 		Edges:      edges,
 		Logs:       logs,
+		Tasks:      taskList,
 	}, nil
 }
 

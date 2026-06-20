@@ -14,6 +14,7 @@ export interface Region {
   end: number
   name: string
   depth: number
+  task?: number
 }
 
 export interface Log {
@@ -21,6 +22,15 @@ export interface Log {
   goId: number
   category: string
   message: string
+  task?: number
+}
+
+export interface Task {
+  id: number
+  parent: number
+  name: string
+  start: number
+  end: number
 }
 
 export interface Goroutine {
@@ -47,4 +57,5 @@ export interface TraceSummary {
   goroutines: Goroutine[]
   edges: CausalEdge[]
   logs?: Log[]
+  tasks?: Task[]
 }
