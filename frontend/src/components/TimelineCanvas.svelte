@@ -35,10 +35,11 @@
         width: cssWidth, gutter: GUTTER_W, startTime: $summary.startTime, endTime: $summary.endTime, taskRowH: TASK_ROW_H,
       })
     : { bars: [] as TaskBar[], height: 0 }
+  $: groups = visible.length ? groupGoroutines(visible) : []
   $: rows = $summary
     ? layoutTimelineRows(
         { ...$summary, goroutines: visible },
-        groupGoroutines(visible),
+        groups,
         $collapsedGroups,
         { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP, gutter: GUTTER_W, regionRowH: REGION_ROW_H, topOffset: taskTrack.height },
       )
@@ -101,7 +102,7 @@
       ctx.fillStyle = GROUP_HEADER_BG
       ctx.fillRect(0, h.y, cssWidth, h.height)
       ctx.fillStyle = '#cdd3df'
-      ctx.fillText(`${h.collapsed ? '▸' : '▾'} ${h.name} ×${h.count}`, 6, h.y + h.height / 2)
+      ctx.fillText(fitLabel(ctx, `${h.collapsed ? '▸' : '▾'} ${h.name} ×${h.count}`, cssWidth - 12), 6, h.y + h.height / 2)
     }
 
     // State bars.
@@ -165,10 +166,10 @@
     }
 
     // Playhead.
-    if ($summary && lanes.length) {
+    if ($summary && rows.length) {
       const scale = makeTimeScale($summary.startTime, $summary.endTime, GUTTER_W, cssWidth)
       const x = scale.toPixel($playhead)
-      const bottom = lanes[lanes.length - 1].y + lanes[lanes.length - 1].totalHeight
+      const bottom = rowsHeight(rows)
       ctx.strokeStyle = '#5b8def'
       ctx.lineWidth = 2
       ctx.beginPath()
