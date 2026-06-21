@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { layoutTimelineRows, hitGroupHeader, GROUP_HEADER_H } from './timelineLayout'
+import { layoutTimelineRows, hitGroupHeader, rowsHeight, GROUP_HEADER_H } from './timelineLayout'
 import { groupGoroutines } from './grouping'
 
 describe('layoutTimelineRows', () => {
@@ -44,6 +44,20 @@ describe('layoutTimelineRows', () => {
     const lane = rows[0] as any
     expect(lane.rects[0].x).toBe(0)
     expect(lane.rects[0].width).toBe(200) // full span
+  })
+})
+
+describe('rowsHeight', () => {
+  it('returns 0 for no rows', () => {
+    expect(rowsHeight([])).toBe(0)
+  })
+  it('uses totalHeight when the last row is a lane', () => {
+    const rows = [{ kind: 'lane', y: 10, totalHeight: 18 }] as any
+    expect(rowsHeight(rows)).toBe(28)
+  })
+  it('uses height when the last row is a (collapsed) header', () => {
+    const rows = [{ kind: 'header', y: 30, height: 16 }] as any
+    expect(rowsHeight(rows)).toBe(46)
   })
 })
 

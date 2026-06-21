@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { traceStore } from '../stores/trace'
-  import { layoutTimelineRows, hitGroupHeader, type TimelineRow, type Lane } from '../lib/timelineLayout'
+  import { layoutTimelineRows, hitGroupHeader, rowsHeight, type TimelineRow, type Lane } from '../lib/timelineLayout'
   import { groupGoroutines } from '../lib/grouping'
   import { layoutTaskTrack, type TaskBar } from '../lib/taskTrack'
   import { makeTimeScale } from '../lib/timeMap'
@@ -45,9 +45,7 @@
     : ([] as TimelineRow[])
   $: lanes = rows.filter((r): r is { kind: 'lane' } & Lane => r.kind === 'lane')
   $: headers = rows.filter((r) => r.kind === 'header') as Extract<TimelineRow, { kind: 'header' }>[]
-  $: cssHeight = rows.length
-    ? Math.max(400, (() => { const last = rows[rows.length - 1]; return last.kind === 'lane' ? last.y + last.totalHeight : last.y + last.height })())
-    : 400
+  $: cssHeight = Math.max(400, rowsHeight(rows))
 
   $: chain = $summary && $selectedId !== null ? causalNeighbors($summary.edges, $selectedId) : null
 
@@ -96,6 +94,7 @@
     const laneAlpha = (gid: number) => (chain && !chain.has(gid) ? GHOST_ALPHA : 1)
 
     // Group header rows: a disclosure triangle + "name ×count" on a faint band.
+    ctx.globalAlpha = 1
     ctx.textBaseline = 'middle'
     ctx.font = '11px system-ui, sans-serif'
     for (const h of headers) {
@@ -148,6 +147,7 @@
 
     // Lane labels in the gutter.
     ctx.font = '11px system-ui, sans-serif'
+    ctx.textBaseline = 'middle'
     ctx.fillStyle = '#cdd3df'
     for (const lane of lanes) {
       ctx.globalAlpha = laneAlpha(lane.goroutineId)

@@ -131,6 +131,14 @@ export function layoutTimelineRows(
   return rows
 }
 
+// rowsHeight returns the bottom edge of the last row (or 0 when empty): a lane
+// row extends to y+totalHeight, a header row to y+height.
+export function rowsHeight(rows: TimelineRow[]): number {
+  if (rows.length === 0) return 0
+  const last = rows[rows.length - 1]
+  return last.kind === 'lane' ? last.y + last.totalHeight : last.y + last.height
+}
+
 // hitGroupHeader returns the group key of the header row containing y, or null
 // (the header row is full-width, so only y matters).
 export function hitGroupHeader(rows: TimelineRow[], y: number): string | null {
