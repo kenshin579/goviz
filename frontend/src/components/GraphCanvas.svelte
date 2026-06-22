@@ -212,8 +212,6 @@
     // Nodes. Super-nodes (collapsed groups) draw in a fixed neutral color with a
     // ring + label; individual nodes keep their state-at-t color. In focus mode a
     // super-node stays bright if any member is in the chain.
-    ctx.font = '10px system-ui, sans-serif'
-    ctx.textBaseline = 'middle'
     for (const n of nodes) {
       if (n.x == null) continue
       const inChain = !chain ? true : n.group ? n.group.memberIds.some((id) => chain.has(id)) : chain.has(n.id)
@@ -227,6 +225,8 @@
         ctx.lineWidth = 1.5
         ctx.stroke()
         ctx.fillStyle = '#cdd3df'
+        ctx.font = '10px system-ui, sans-serif'
+        ctx.textBaseline = 'middle'
         ctx.fillText(n.label, n.x + 12, n.y!)
       } else {
         const g = goroutineById.get(n.id)
