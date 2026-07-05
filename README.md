@@ -15,6 +15,14 @@ The inspiration, [divan/gotrace](https://github.com/divan/gotrace), made gorouti
 - **Playback** — play / pause / scrub / speed (0.25×–4×), Space to toggle. The timeline and graph stay in lockstep on one shared playhead.
 - **Focus** — parked `runtime.*` system goroutines are hidden by default (toggle to show); click a goroutine to cross-highlight it in both views.
 
+![GoViz hybrid view — goroutine timeline on top, live causal graph below](docs/images/hybrid-view.png)
+
+*The hybrid view: a goroutine timeline (top) and a live, force-directed goroutine graph (bottom), both driven by one shared playhead.*
+
+![GoViz onboarding — open a trace or explore a sample](docs/images/onboarding.png)
+
+*Start screen: explore a built-in sample trace, or open your own `.out` file.*
+
 ## Honest limitations
 
 The Go execution trace records *that* one goroutine unblocked another and *why it was blocked* (channel, mutex, …), but it does **not** record channel identities or transferred values. So causal edges are **inferred** — the UI labels them "(inferred)" rather than claiming a specific channel. Goroutines that stay parked for the whole trace (many runtime internals) only appear at the trace's end, because that's all the trace says about them.
