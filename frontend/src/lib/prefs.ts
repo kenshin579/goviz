@@ -27,7 +27,9 @@ export const KEYS = {
   onboarded: 'tracego.onboarded',
 } as const
 
-type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
+export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+
+export type PrefKey = (typeof KEYS)[keyof typeof KEYS]
 
 export function detectLang(navLang: string | undefined): Lang {
   return navLang && navLang.toLowerCase().startsWith('ko') ? 'ko' : 'en'
@@ -58,11 +60,16 @@ export function loadPrefs(storage: StorageLike | null, navLang?: string): Prefs 
   }
 }
 
-// Best-effort persist; null means "no explicit choice" and is never written.
-export function savePref(storage: StorageLike | null, key: string, value: string | boolean | null): void {
-  if (!storage || value === null) return
+// Best-effort persist; null means "no explicit choice" and removes any stored
+// value so loadPrefs falls back to the default on the next start.
+export function savePref(storage: StorageLike | null, key: PrefKey, value: string | boolean | null): void {
+  if (!storage) return
   try {
-    storage.setItem(key, String(value))
+    if (value === null) {
+      storage.removeItem(key)
+    } else {
+      storage.setItem(key, String(value))
+    }
   } catch {
     // storage unavailable (private mode etc.) — prefs just won't survive restarts
   }

@@ -30,7 +30,8 @@ export const EDGE_ACTIVE_COLOR = DEFAULT_PALETTE.category.channel // edge firing
 
 // Per-category edge/comet colors. These encode the inferred synchronization
 // kind, NOT a transferred value (the trace has no channel identity).
-export const CATEGORY_COLORS: Record<EdgeCategory, string> = DEFAULT_PALETTE.category
+// Copied so consumers can't mutate the shared palette object.
+export const CATEGORY_COLORS: Record<EdgeCategory, string> = { ...DEFAULT_PALETTE.category }
 
 export function categoryColor(category: EdgeCategory): string {
   return CATEGORY_COLORS[category] ?? CATEGORY_COLORS.channel

@@ -8,6 +8,7 @@ function fakeStorage(init: Record<string, string> = {}) {
   return {
     getItem: (k: string) => (m.has(k) ? m.get(k)! : null),
     setItem: (k: string, v: string) => void m.set(k, v),
+    removeItem: (k: string) => void m.delete(k),
     dump: () => Object.fromEntries(m),
   }
 }
@@ -33,6 +34,14 @@ describe('createPrefsStore', () => {
     expect(get(p.palette).state.running).toBe('#0072b2')
     p.theme.set('light')
     expect(get(p.palette).canvasBg).toBe('#f5f6f8')
+  })
+  it('persists labels=true then removes the key when set back to null', () => {
+    const s = fakeStorage()
+    const p = createPrefsStore(s, 'en-US')
+    p.labels.set(true)
+    expect(s.dump()[KEYS.labels]).toBe('true')
+    p.labels.set(null)
+    expect(s.dump()).not.toHaveProperty(KEYS.labels)
   })
   it('works with null storage (no persistence, defaults only)', () => {
     const p = createPrefsStore(null, undefined)

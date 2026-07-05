@@ -6,6 +6,7 @@ function fakeStorage(init: Record<string, string> = {}) {
   return {
     getItem: (k: string) => (m.has(k) ? m.get(k)! : null),
     setItem: (k: string, v: string) => void m.set(k, v),
+    removeItem: (k: string) => void m.delete(k),
     dump: () => Object.fromEntries(m),
   }
 }
@@ -50,8 +51,8 @@ describe('loadPrefs', () => {
 })
 
 describe('savePref', () => {
-  it('stringifies values under the given key and skips null', () => {
-    const s = fakeStorage()
+  it('stringifies values under the given key and removes the key on null', () => {
+    const s = fakeStorage({ [KEYS.labels]: 'true' })
     savePref(s, KEYS.loop, true)
     savePref(s, KEYS.lang, 'ko')
     savePref(s, KEYS.labels, null)

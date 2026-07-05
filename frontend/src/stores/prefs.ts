@@ -1,9 +1,16 @@
 import { writable, derived, type Writable, type Readable } from 'svelte/store'
-import { loadPrefs, savePref, KEYS, type Lang, type Theme, type GuideVariant } from '../lib/prefs'
+import {
+  loadPrefs,
+  savePref,
+  KEYS,
+  type Lang,
+  type Theme,
+  type GuideVariant,
+  type PrefKey,
+  type StorageLike,
+} from '../lib/prefs'
 import { t, type Dict } from '../lib/i18n'
 import { makePalette, type Palette } from '../lib/palette'
-
-type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 
 export interface PrefsStore {
   lang: Writable<Lang>
@@ -34,7 +41,7 @@ export function createPrefsStore(
 ): PrefsStore {
   const p = loadPrefs(storage, navLang)
 
-  function persisted<T extends string | boolean | null>(key: string, initial: T): Writable<T> {
+  function persisted<T extends string | boolean | null>(key: PrefKey, initial: T): Writable<T> {
     const w = writable<T>(initial)
     return {
       subscribe: w.subscribe,
