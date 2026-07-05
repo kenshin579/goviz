@@ -1,4 +1,4 @@
-# trace-go Plan 2E — Edge Flash + Timeline Lane Labels
+# goviz Plan 2E — Edge Flash + Timeline Lane Labels
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -52,7 +52,7 @@ describe('categoryColor', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- format
 ```
 Expected: FAIL — `categoryColor` is not exported.
@@ -81,7 +81,7 @@ export function categoryColor(category: EdgeCategory): string {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- format
 ```
 Expected: PASS.
@@ -89,7 +89,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/format.ts frontend/src/lib/format.test.ts
 git commit -m "feat(frontend): add per-category edge colors"
 ```
@@ -151,7 +151,7 @@ describe('constants', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- flash
 ```
 Expected: FAIL — cannot find `./flash`.
@@ -194,7 +194,7 @@ export function cometPoint(
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- flash
 ```
 Expected: all tests PASS.
@@ -202,7 +202,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/flash.ts frontend/src/lib/flash.test.ts
 git commit -m "feat(frontend): add edge-crossing detection and comet lerp"
 ```
@@ -245,7 +245,7 @@ describe('layoutTimeline gutter', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: FAIL — gutter not applied (first assertion expects x=50, gets 0).
@@ -275,7 +275,7 @@ to:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: all timelineLayout tests PASS (existing + 2 new).
@@ -283,7 +283,7 @@ Expected: all timelineLayout tests PASS (existing + 2 new).
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/timelineLayout.ts frontend/src/lib/timelineLayout.test.ts
 git commit -m "feat(frontend): add optional gutter offset to timeline layout"
 ```
@@ -574,7 +574,7 @@ Write `frontend/src/components/GraphCanvas.svelte`:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
 ```
 Expected: 0 check errors; all unit suites still pass (component has no unit tests; this confirms it compiles and nothing else broke).
@@ -582,7 +582,7 @@ Expected: 0 check errors; all unit suites still pass (component has no unit test
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/GraphCanvas.svelte
 git commit -m "feat(frontend): edge flash comets with arrival ring on the graph"
 ```
@@ -766,7 +766,7 @@ Write `frontend/src/components/TimelineCanvas.svelte`:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
 ```
 Expected: 0 check errors; all unit suites still pass.
@@ -774,7 +774,7 @@ Expected: 0 check errors; all unit suites still pass.
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): timeline lane labels in a left gutter"
 ```
@@ -827,9 +827,9 @@ Write `frontend/src/components/Legend.svelte`:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds (the automated gate that the new components compile in the production bundle).
@@ -847,7 +847,7 @@ Report observations. If `wails dev` can't launch, report DONE_WITH_CONCERNS noti
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/Legend.svelte
 git commit -m "feat(frontend): per-category edge legend"
 ```

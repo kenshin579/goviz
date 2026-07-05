@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** `docs/design/UI 사용성 개선 제안/TraceGo Onboarding.dc.html` 목업의 6개 기능 묶음(온보딩 가이드 3방식, 설정 팝업, 리치 빈 화면+샘플 트레이스, en/ko i18n, dark/light 테마+색약 팔레트, 범례 정리)을 단일 PR로 구현한다.
+**Goal:** `docs/design/UI 사용성 개선 제안/GoViz Onboarding.dc.html` 목업의 6개 기능 묶음(온보딩 가이드 3방식, 설정 팝업, 리치 빈 화면+샘플 트레이스, en/ko i18n, dark/light 테마+색약 팔레트, 범례 정리)을 단일 PR로 구현한다.
 
 **Architecture:** 뷰 결정은 순수 `lib/` 모듈(Vitest 테스트) + 컴포넌트는 얇은 렌더러 원칙 유지. 새 `stores/prefs.ts`가 localStorage 지속 설정의 단일 소스이고, `lib/palette.ts`·`lib/i18n.ts`·`lib/guide.ts`가 파생 뷰 값을 계산한다. 유일한 Go 작업은 `LoadSampleTrace()` 바인딩(내장 워크로드를 `runtime/trace`로 녹화해 기존 `parse.Parse`로 파싱).
 
@@ -159,14 +159,14 @@ export interface Prefs {
 }
 
 export const KEYS = {
-  lang: 'tracego.lang',
-  theme: 'tracego.theme',
-  guide: 'tracego.guide',
-  loop: 'tracego.loop',
-  labels: 'tracego.labels',
-  cb: 'tracego.cb',
-  sys: 'tracego.sys',
-  onboarded: 'tracego.onboarded',
+  lang: 'goviz.lang',
+  theme: 'goviz.theme',
+  guide: 'goviz.guide',
+  loop: 'goviz.loop',
+  labels: 'goviz.labels',
+  cb: 'goviz.cb',
+  sys: 'goviz.sys',
+  onboarded: 'goviz.onboarded',
 } as const
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
@@ -372,7 +372,7 @@ git commit -m "feat(frontend): add theme/colorblind palette; format colors deleg
 - Create: `frontend/src/lib/i18n.ts`
 - Test: `frontend/src/lib/i18n.test.ts`
 
-문구는 목업 `docs/design/UI 사용성 개선 제안/TraceGo Onboarding.dc.html`의 `copy` 객체(L312-377)가 원본이다. 아래 구현 코드에 전체를 옮겨 두었지만, 의심스러우면 목업과 대조할 것 (`minimalLine` 키만 의도적으로 제외 — minimal 빈 화면은 스코프 밖).
+문구는 목업 `docs/design/UI 사용성 개선 제안/GoViz Onboarding.dc.html`의 `copy` 객체(L312-377)가 원본이다. 아래 구현 코드에 전체를 옮겨 두었지만, 의심스러우면 목업과 대조할 것 (`minimalLine` 키만 의도적으로 제외 — minimal 빈 화면은 스코프 밖).
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
@@ -428,7 +428,7 @@ Expected: FAIL — 모듈 없음
 
 ```ts
 // UI copy for en/ko, ported verbatim from the design mockup
-// (docs/design/UI 사용성 개선 제안/TraceGo Onboarding.dc.html, `copy` object).
+// (docs/design/UI 사용성 개선 제안/GoViz Onboarding.dc.html, `copy` object).
 // Pure: components read a derived dict store from stores/prefs.ts.
 import type { IntervalState } from './format'
 import type { EdgeCategory } from './types'
@@ -522,7 +522,7 @@ const en: Dict = {
   info: (g, e, ms) => `${g} goroutines · ${e} edges · ${ms} ms`,
   emptyTitle: "See your Go program's concurrency",
   emptyDesc:
-    'trace-go replays a standard Go execution trace: every goroutine gets a timeline lane on top, and a live graph below shows who unblocked whom — both driven by one shared playhead.',
+    'goviz replays a standard Go execution trace: every goroutine gets a timeline lane on top, and a live graph below shows who unblocked whom — both driven by one shared playhead.',
   card1Title: '① Timeline',
   card1Desc: 'One lane per goroutine — {run} running, gray runnable, {blk} blocked. Hover a bar to see why it blocked.',
   card2Title: '② Live graph',
@@ -600,7 +600,7 @@ const ko: Dict = {
   info: (g, e, ms) => `고루틴 ${g} · 엣지 ${e} · ${ms} ms`,
   emptyTitle: 'Go 프로그램의 동시성을 눈으로 확인하세요',
   emptyDesc:
-    'trace-go는 표준 Go 실행 트레이스를 재생합니다. 위쪽 타임라인에는 고루틴별 레인이, 아래쪽 라이브 그래프에는 누가 누구를 깨웠는지가 표시되며, 두 뷰는 하나의 플레이헤드로 함께 움직입니다.',
+    'goviz는 표준 Go 실행 트레이스를 재생합니다. 위쪽 타임라인에는 고루틴별 레인이, 아래쪽 라이브 그래프에는 누가 누구를 깨웠는지가 표시되며, 두 뷰는 하나의 플레이헤드로 함께 움직입니다.',
   card1Title: '① 타임라인',
   card1Desc: '고루틴마다 한 줄 — {run}은 실행 중, 회색은 실행 대기, {blk}은 차단됨. 막대에 마우스를 올리면 차단 이유가 보입니다.',
   card2Title: '② 라이브 그래프',
@@ -1395,7 +1395,7 @@ func TestLoadSampleTraceInvariants(t *testing.T) {
 }
 ```
 
-(파일 상단 import에 `"strings"`와 `"github.com/kenshin579/trace-go/internal/model"`이 이미 있는지 확인, 없으면 추가.)
+(파일 상단 import에 `"strings"`와 `"github.com/kenshin579/goviz/internal/model"`이 이미 있는지 확인, 없으면 추가.)
 
 - [ ] **Step 2: 실패 확인**
 
@@ -2231,7 +2231,7 @@ git commit -m "docs: tick mockup coverage checklist after implementation"
 git push -u origin feat/ui-onboarding-settings
 gh pr create --assignee kenshin579 --title "feat: 목업 기반 UI 개선 — 온보딩·설정·테마·i18n·리치 빈 화면" --body "$(cat <<'EOF'
 ## 배경
-- docs/design 목업(TraceGo Onboarding)의 6개 기능 묶음을 단일 PR로 구현
+- docs/design 목업(GoViz Onboarding)의 6개 기능 묶음을 단일 PR로 구현
 - 온보딩 가이드 3방식(투어/콜아웃/인라인 힌트, 최초 1회 자동 표시), 설정 팝업(언어·테마·안내 방식·토글 4개, localStorage 지속)
 - 리치 빈 화면 + Go `LoadSampleTrace()` 내장 샘플 트레이스, en/ko i18n(로케일 자동 감지), dark/light 테마 + 색약 팔레트, 범례 정리
 - 스펙: docs/superpowers/specs/2026-07-05-mockup-ui-onboarding-settings-design.md (목업 커버리지 체크리스트 포함)

@@ -17,14 +17,14 @@ export interface Prefs {
 }
 
 export const KEYS = {
-  lang: 'tracego.lang',
-  theme: 'tracego.theme',
-  guide: 'tracego.guide',
-  loop: 'tracego.loop',
-  labels: 'tracego.labels',
-  cb: 'tracego.cb',
-  sys: 'tracego.sys',
-  onboarded: 'tracego.onboarded',
+  lang: 'goviz.lang',
+  theme: 'goviz.theme',
+  guide: 'goviz.guide',
+  loop: 'goviz.loop',
+  labels: 'goviz.labels',
+  cb: 'goviz.cb',
+  sys: 'goviz.sys',
+  onboarded: 'goviz.onboarded',
 } as const
 
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>

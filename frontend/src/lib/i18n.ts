@@ -1,5 +1,5 @@
 // UI copy for en/ko, ported verbatim from the design mockup
-// (docs/design/UI 사용성 개선 제안/TraceGo Onboarding.dc.html, `copy` object).
+// (docs/design/UI 사용성 개선 제안/GoViz Onboarding.dc.html, `copy` object).
 // Pure: components read a derived dict store from stores/prefs.ts.
 import type { IntervalState } from './format'
 import type { EdgeCategory } from './types'
@@ -93,7 +93,7 @@ const en: Dict = {
   info: (g, e, ms) => `${g} goroutines · ${e} edges · ${ms} ms`,
   emptyTitle: "See your Go program's concurrency",
   emptyDesc:
-    'trace-go replays a standard Go execution trace: every goroutine gets a timeline lane on top, and a live graph below shows who unblocked whom — both driven by one shared playhead.',
+    'GoViz replays a standard Go execution trace: every goroutine gets a timeline lane on top, and a live graph below shows who unblocked whom — both driven by one shared playhead.',
   card1Title: '① Timeline',
   card1Desc: 'One lane per goroutine — {run} running, gray runnable, {blk} blocked. Hover a bar to see why it blocked.',
   card2Title: '② Live graph',
@@ -171,7 +171,7 @@ const ko: Dict = {
   info: (g, e, ms) => `고루틴 ${g} · 엣지 ${e} · ${ms} ms`,
   emptyTitle: 'Go 프로그램의 동시성을 눈으로 확인하세요',
   emptyDesc:
-    'trace-go는 표준 Go 실행 트레이스를 재생합니다. 위쪽 타임라인에는 고루틴별 레인이, 아래쪽 라이브 그래프에는 누가 누구를 깨웠는지가 표시되며, 두 뷰는 하나의 플레이헤드로 함께 움직입니다.',
+    'GoViz는 표준 Go 실행 트레이스를 재생합니다. 위쪽 타임라인에는 고루틴별 레인이, 아래쪽 라이브 그래프에는 누가 누구를 깨웠는지가 표시되며, 두 뷰는 하나의 플레이헤드로 함께 움직입니다.',
   card1Title: '① 타임라인',
   card1Desc: '고루틴마다 한 줄 — {run}은 실행 중, 회색은 실행 대기, {blk}은 차단됨. 막대에 마우스를 올리면 차단 이유가 보입니다.',
   card2Title: '② 라이브 그래프',

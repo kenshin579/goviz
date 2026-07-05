@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`trace-go` is a Wails v2 desktop app that visualizes Go concurrency. It parses a Go **execution trace** (the same data `go tool trace` consumes, produced by `runtime/trace`) into a normalized model and renders a **hybrid view**: a goroutine timeline (top) plus a live, force-directed goroutine graph (bottom), both driven by a single shared playhead. Design rationale and the staged build history live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — read the spec before making product/UX decisions.
+`goviz` is a Wails v2 desktop app that visualizes Go concurrency. It parses a Go **execution trace** (the same data `go tool trace` consumes, produced by `runtime/trace`) into a normalized model and renders a **hybrid view**: a goroutine timeline (top) plus a live, force-directed goroutine graph (bottom), both driven by a single shared playhead. Design rationale and the staged build history live in `docs/superpowers/specs/` and `docs/superpowers/plans/` — read the spec before making product/UX decisions.
 
 Core constraint: **no runtime patching.** Unlike the project that inspired it (divan/gotrace, which patched the Go runtime and died from version churn), this tool only reads the official, stable Go 1.22+ trace format via `golang.org/x/exp/trace`.
 
@@ -22,7 +22,7 @@ Frontend (run from `frontend/`):
 - `npm run dev` / `npm run build` — Vite dev server / production bundle (usually driven by Wails, below).
 
 Desktop app (run from repo root; needs the `wails` CLI, Node, and a C toolchain):
-- `wails dev` — hot-reloading dev app. `wails build` — production `build/bin/trace-go.app`. Either one regenerates the TypeScript bindings in `frontend/wailsjs/` from the bound Go methods.
+- `wails dev` — hot-reloading dev app. `wails build` — production `build/bin/goviz.app`. Either one regenerates the TypeScript bindings in `frontend/wailsjs/` from the bound Go methods.
 - Generating a trace to open: run any Go program under `runtime/trace.Start/Stop` (see `app_test.go:writeSampleTrace` for the in-process pattern), then File → "Open trace…".
 
 After `wails build`/`wails dev`, the working tree may show spurious changes to `frontend/dist/gitkeep` and `frontend/wailsjs/runtime/*` — `git checkout --` those before committing. `frontend/package.json.md5` is gitignored.

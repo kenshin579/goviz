@@ -1,4 +1,4 @@
-# trace-go Selection Causal Focus (analysis ①) Implementation Plan
+# goviz Selection Causal Focus (analysis ①) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -66,7 +66,7 @@ describe('causalNeighbors', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- causalFocus
 ```
 Expected: FAIL — cannot find `./causalFocus`.
@@ -95,7 +95,7 @@ export function causalNeighbors(edges: CausalEdge[], selectedId: number): Set<nu
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- causalFocus && npm run check
 ```
 Expected: all 5 tests PASS; 0 check errors.
@@ -103,7 +103,7 @@ Expected: all 5 tests PASS; 0 check errors.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/causalFocus.ts frontend/src/lib/causalFocus.test.ts
 git commit -m "feat(frontend): pure causalNeighbors (1-hop causal chain set)"
 ```
@@ -234,9 +234,9 @@ Replace it with:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds. After build, revert spurious generated files: `git checkout -- frontend/dist/gitkeep frontend/wailsjs/runtime/`.
@@ -244,7 +244,7 @@ Expected: 0 check errors; all unit suites pass; `wails build` succeeds. After bu
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/GraphCanvas.svelte
 git commit -m "feat(frontend): graph causal focus on selection"
 ```
@@ -366,9 +366,9 @@ to:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds. Revert spurious generated files: `git checkout -- frontend/dist/gitkeep frontend/wailsjs/runtime/`.
@@ -376,14 +376,14 @@ Expected: 0 check errors; all unit suites pass; `wails build` succeeds. Revert s
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): timeline causal focus on selection"
 ```
 
 - [ ] **Step 6: Manual visual verification (human)**
 
-Open a trace with causal edges (e.g. `~/Desktop/trace-tasks.out`, or generate one). Run the app (`open build/bin/trace-go.app`), open the trace, then:
+Open a trace with causal edges (e.g. `~/Desktop/trace-tasks.out`, or generate one). Run the app (`open build/bin/goviz.app`), open the trace, then:
 1. **Click a goroutine node** in the graph → that node keeps its ring, its **direct unblockers + unblockees stay bright with emphasized (colored) edges**, and **everything else (nodes, edges) ghosts to ~15% opacity**.
 2. **Timeline mirrors it** → the chain's lanes stay bright; **non-chain lanes (bars/regions/logs/labels) ghost**; the selected lane keeps its white outline; the TASKS track and playhead stay at full opacity.
 3. **Scrub the playhead** → chain membership does NOT change (static); only the chain nodes' state colors update. No re-layout.

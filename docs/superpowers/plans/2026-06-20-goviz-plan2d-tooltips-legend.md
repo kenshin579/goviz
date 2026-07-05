@@ -1,4 +1,4 @@
-# trace-go Plan 2D — Hover Tooltips + Legend (honesty polish)
+# goviz Plan 2D — Hover Tooltips + Legend (honesty polish)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Svelte 3 + TypeScript + Vite, Vitest, HTML Canvas 2D (existing). No new dependencies.
 
-**Scope note:** This is Plan 2D of the `trace-go` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements the spec's hover affordances (§4 "블록 구간 hover → 이유 툴팁", §4 그래프 엣지 hover) and the §3 honesty requirement (edges are *inferred* — no channel identity / no value). Plans 1, 2A, 2B, 2C are merged on `main`. Explicitly **out of scope** (a possible later plan): edge "flash" tween animation, graph zoom/pan, large-trace (1000s nodes) WebGL performance.
+**Scope note:** This is Plan 2D of the `goviz` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements the spec's hover affordances (§4 "블록 구간 hover → 이유 툴팁", §4 그래프 엣지 hover) and the §3 honesty requirement (edges are *inferred* — no channel identity / no value). Plans 1, 2A, 2B, 2C are merged on `main`. Explicitly **out of scope** (a possible later plan): edge "flash" tween animation, graph zoom/pan, large-trace (1000s nodes) WebGL performance.
 
 **Current state (verified):** `TimelineCanvas.svelte` has a `pointerdown`/`pointermove` scrub (drag) + a wrapper `div.timeline-canvas-wrap`; lanes come from `layoutTimeline` (each `LayoutRect` has `state`, `blockReason`, `x`, `width`; constants `LANE_H=18`, `LANE_GAP=3`). `GraphCanvas.svelte` has `nodeAt(px,py)` (radius 10) + `onClick`→`toggleSelected`, a wrapper `div.graph-wrap`, persistent `nodes` (with `x/y` from d3-force) and `links` (whose `source`/`target` are mutated into `GraphNode` refs), and `goroutineById`. `lib/format.ts` exports `IntervalState` + `stateColor`; `lib/activeAt.ts` exports `stateAt`. 41 vitest tests pass.
 
@@ -72,7 +72,7 @@ describe('edgeTooltip', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- tooltip
 ```
 Expected: FAIL — cannot find `./tooltip`.
@@ -113,7 +113,7 @@ export function edgeTooltip(category: EdgeCategory, fromLabel: string, toLabel: 
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- tooltip
 ```
 Expected: all tests PASS.
@@ -121,7 +121,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/tooltip.ts frontend/src/lib/tooltip.test.ts
 git commit -m "feat(frontend): add pure tooltip text builders"
 ```
@@ -201,7 +201,7 @@ describe('distToSegment', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- hit
 ```
 Expected: FAIL — cannot find `./hit`.
@@ -270,7 +270,7 @@ export function distToSegment(
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- hit
 ```
 Expected: all tests PASS.
@@ -278,7 +278,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/hit.ts frontend/src/lib/hit.test.ts
 git commit -m "feat(frontend): add pure hit-testing for tooltips"
 ```
@@ -336,7 +336,7 @@ Then render `<Legend />` as the last child inside `<main>`, after the `{#if $sum
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check
 ```
 Expected: 0 errors.
@@ -344,7 +344,7 @@ Expected: 0 errors.
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/Legend.svelte frontend/src/App.svelte
 git commit -m "feat(frontend): add color legend"
 ```
@@ -423,7 +423,7 @@ And update the `<style>` block — replace `.timeline-canvas-wrap { width: 100%;
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
 ```
 Expected: 0 check errors; all unit suites pass (tooltip, hit, + existing).
@@ -431,7 +431,7 @@ Expected: 0 check errors; all unit suites pass (tooltip, hit, + existing).
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): timeline interval hover tooltip"
 ```
@@ -537,7 +537,7 @@ And update the `<style>` — add to it:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
 ```
 Expected: 0 check errors; all unit suites pass.
@@ -546,14 +546,14 @@ Expected: 0 check errors; all unit suites pass.
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: builds successfully.
 
 - [ ] **Step 5: Manual visual verification (human)**
 
-Run `wails dev` (or open `build/bin/trace-go.app`), open a trace (e.g. `~/Desktop/trace.out`), and confirm:
+Run `wails dev` (or open `build/bin/goviz.app`), open a trace (e.g. `~/Desktop/trace.out`), and confirm:
 1. Hovering a **timeline interval** shows a tooltip with the goroutine label and `state · reason` (e.g. `blocked · chan receive`); it disappears when leaving the canvas; scrubbing (drag) still works and suppresses the tooltip.
 2. Hovering a **graph node** shows `label` + its state at the current playhead (or "not running at this time").
 3. Hovering a **graph edge** shows `gA → gB` + `channel communication (inferred)` / `mutex synchronization (inferred)` — confirming the honesty label.
@@ -564,7 +564,7 @@ This needs a human (or the controller running the app). Report observations. If 
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/GraphCanvas.svelte
 git commit -m "feat(frontend): graph node/edge hover tooltips with inferred-edge label"
 ```

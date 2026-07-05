@@ -1,4 +1,4 @@
-# trace-go Graph Super-Nodes (B6 Stage 2) Implementation Plan
+# goviz Graph Super-Nodes (B6 Stage 2) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -38,7 +38,7 @@ In `frontend/src/lib/graphModel.ts`, add to the `GraphNode` interface (after the
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphModel && npm run check
 ```
 Expected: graphModel tests still pass (optional field, no behavior change); 0 check errors.
@@ -46,7 +46,7 @@ Expected: graphModel tests still pass (optional field, no behavior change); 0 ch
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/graphModel.ts
 git commit -m "feat(frontend): add group field to graph node (super-node marker)"
 ```
@@ -128,7 +128,7 @@ describe('collapseGraph', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphCollapse
 ```
 Expected: FAIL — cannot find `./graphCollapse`.
@@ -202,7 +202,7 @@ export function collapseGraph(
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphCollapse && npm run check
 ```
 Expected: all tests PASS; 0 check errors.
@@ -210,7 +210,7 @@ Expected: all tests PASS; 0 check errors.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/graphCollapse.ts frontend/src/lib/graphCollapse.test.ts
 git commit -m "feat(frontend): pure collapseGraph (merge collapsed groups into super-nodes)"
 ```
@@ -425,9 +425,9 @@ Change to show the group label for super-nodes:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds. After build, revert spurious generated files: `git checkout -- frontend/dist/gitkeep frontend/wailsjs/runtime/`.
@@ -435,14 +435,14 @@ Expected: 0 check errors; all unit suites pass; `wails build` succeeds. After bu
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/GraphCanvas.svelte
 git commit -m "feat(frontend): merge collapsed groups into graph super-nodes"
 ```
 
 - [ ] **Step 8: Manual visual verification (human)**
 
-Open a trace with a worker group (e.g. `~/Desktop/trace-tasks.out`: six `main.main.func2`). Run the app (`open build/bin/trace-go.app`), open the trace, then:
+Open a trace with a worker group (e.g. `~/Desktop/trace-tasks.out`: six `main.main.func2`). Run the app (`open build/bin/goviz.app`), open the trace, then:
 1. **Default (expanded)** — graph looks exactly as before: six individual `main.main.func2` nodes, task hulls, comets, causal focus all as today.
 2. **Collapse in the timeline** — click the `▾ main.main.func2 ×6` timeline header. In the GRAPH, the six member nodes merge into ONE neutral-gray node labeled `main.main.func2 ×6`, with a white ring. Edges that went to members now point at the super-node; no duplicate parallel edges.
 3. **Super-node excluded from hull** — the collapsed super-node sits outside the task hulls (hulls now enclose only individual nodes).

@@ -1,4 +1,4 @@
-# trace-go Plan 2B — Playback + System-Goroutine Filtering
+# goviz Plan 2B — Playback + System-Goroutine Filtering
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Svelte 3 + TypeScript + Vite, Vitest. No new dependencies (uses built-in `requestAnimationFrame`).
 
-**Scope note:** This is Plan 2B of the `trace-go` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements the **playback controls** (spec §4 interaction: play/pause, speed 0.25×–4×) and **system-goroutine filtering** (anticipated by the Plan 1 final review and spec §4 "중간 규모 대응"). The **live force-directed graph view + timeline↔graph sync + click cross-highlight (spec §4 lower half)** is **Plan 2C**, built on the playback foundation here. Plans 1 and 2A are merged on `main`.
+**Scope note:** This is Plan 2B of the `goviz` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements the **playback controls** (spec §4 interaction: play/pause, speed 0.25×–4×) and **system-goroutine filtering** (anticipated by the Plan 1 final review and spec §4 "중간 규모 대응"). The **live force-directed graph view + timeline↔graph sync + click cross-highlight (spec §4 lower half)** is **Plan 2C**, built on the playback foundation here. Plans 1 and 2A are merged on `main`.
 
 **Current state (verified):** `frontend/src/stores/trace.ts` exposes `summary`/`playhead` + `loadSummary`/`setPlayhead` (playhead clamped to `[startTime,endTime]`). `frontend/src/components/TimelineCanvas.svelte` renders all goroutines via `layoutTimeline` and redraws reactively on `$playhead`. `frontend/src/App.svelte` has only an "Open trace…" button in the header. `lib/` has `timeMap`, `format`, `timelineLayout`, `types`. 15 vitest tests pass.
 
@@ -78,7 +78,7 @@ describe('nextPlayhead', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- playback
 ```
 Expected: FAIL — cannot find `./playback`.
@@ -121,7 +121,7 @@ export function nextPlayhead(
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- playback
 ```
 Expected: all 5 tests PASS.
@@ -129,7 +129,7 @@ Expected: all 5 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/playback.ts frontend/src/lib/playback.test.ts
 git commit -m "feat(frontend): add pure playback advance math"
 ```
@@ -189,7 +189,7 @@ describe('visibleGoroutines', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- filter
 ```
 Expected: FAIL — cannot find `./filter`.
@@ -220,7 +220,7 @@ export function visibleGoroutines(summary: TraceSummary, showSystem: boolean): G
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- filter
 ```
 Expected: all tests PASS.
@@ -228,7 +228,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/filter.ts frontend/src/lib/filter.test.ts
 git commit -m "feat(frontend): add system-goroutine filter"
 ```
@@ -307,7 +307,7 @@ describe('createTraceStore playback', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- stores/trace
 ```
 Expected: FAIL — `s.playing`, `s.play`, `s.advance`, etc. are undefined.
@@ -423,7 +423,7 @@ export const traceStore = createTraceStore()
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- stores/trace
 ```
 Expected: all store tests PASS (the original 4 + the 5 new playback tests).
@@ -432,7 +432,7 @@ Expected: all store tests PASS (the original 4 + the 5 new playback tests).
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test
 ```
 Expected: playback, filter, timeMap, format, timelineLayout, stores/trace suites all PASS.
@@ -440,7 +440,7 @@ Expected: playback, filter, timeMap, format, timelineLayout, stores/trace suites
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/stores/trace.ts frontend/src/stores/trace.test.ts
 git commit -m "feat(frontend): add playback and filter state to trace store"
 ```
@@ -540,7 +540,7 @@ Finally, in the header, render Controls next to the info line. Replace the heade
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check
 ```
 Expected: 0 errors (a11y hints/warnings acceptable).
@@ -548,7 +548,7 @@ Expected: 0 errors (a11y hints/warnings acceptable).
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/Controls.svelte frontend/src/App.svelte
 git commit -m "feat(frontend): add playback/filter controls to header"
 ```
@@ -595,7 +595,7 @@ Change the reactive `lanes`/`cssHeight` blocks to use the filtered goroutines (s
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
 ```
 Expected: 0 check errors; all unit suites still pass (playback, filter, timeMap, format, timelineLayout, stores/trace).
@@ -604,14 +604,14 @@ Expected: 0 check errors; all unit suites still pass (playback, filter, timeMap,
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: builds successfully (frontend bundles, binary links). This is the automated gate that the new components compile in the production build.
 
 - [ ] **Step 4: Manual visual verification (human)**
 
-Run `wails dev` (or open `build/bin/trace-go.app`), open a trace (e.g. `~/Desktop/trace.out`), and confirm:
+Run `wails dev` (or open `build/bin/goviz.app`), open a trace (e.g. `~/Desktop/trace.out`), and confirm:
 1. With **"Show system goroutines"** unchecked (default), the parked `runtime.*` lanes (the right-edge slivers) are gone and only main + user/worker goroutines show. Checking the box brings them back.
 2. Clicking **▶** animates the blue playhead smoothly left→right; it auto-stops (▶ returns) at the right edge.
 3. Changing **Speed** (e.g. 0.25× vs 4×) visibly slows/speeds the animation.
@@ -622,7 +622,7 @@ This step needs a human (or the controller running the app for the user). Report
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): filter system goroutines from the timeline"
 ```

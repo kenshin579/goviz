@@ -1,4 +1,4 @@
-module github.com/kenshin579/trace-go
+module github.com/kenshin579/goviz
 
 go 1.26.4
 

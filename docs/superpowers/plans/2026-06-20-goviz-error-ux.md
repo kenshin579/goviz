@@ -1,4 +1,4 @@
-# trace-go Error UX (A3) Implementation Plan
+# goviz Error UX (A3) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -67,7 +67,7 @@ func TestClassifyOpenError(t *testing.T) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test . -run TestClassifyOpenError
 ```
 Expected: FAIL — `classifyOpenError` undefined (build error).
@@ -113,7 +113,7 @@ func classifyOpenError(err error) string {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test . -run TestClassifyOpenError -v
 ```
 Expected: PASS (all six subtests).
@@ -121,7 +121,7 @@ Expected: PASS (all six subtests).
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add errors.go errors_test.go
 git commit -m "feat(app): classify trace-open errors into friendly messages"
 ```
@@ -170,7 +170,7 @@ Add `"strings"` to the `app_test.go` import block (it already imports `os`, `pat
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test . -run 'TestOpenTraceMissingFileErrors|TestOpenTraceNotATraceErrors'
 ```
 Expected: FAIL — `OpenTrace` currently returns the raw `*PathError` / `bad file format` strings, not the friendly messages.
@@ -200,7 +200,7 @@ func (a *App) OpenTrace(path string) (*model.TraceSummary, error) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test . -run 'TestOpenTrace' -v
 go test ./...
 ```
@@ -209,7 +209,7 @@ Expected: `TestOpenTraceReturnsSummary` (happy path) still passes; the two error
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add app.go app_test.go
 git commit -m "feat(app): return friendly messages from OpenTrace"
 ```
@@ -266,9 +266,9 @@ and add:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds.
@@ -278,7 +278,7 @@ After `wails build`, revert spurious generated files: `git checkout -- frontend/
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/App.svelte
 git commit -m "feat(frontend): show trace-open errors in a dismissible banner"
 ```
@@ -290,7 +290,7 @@ Prepare a garbage file and (re)use a valid trace, then open them. Run:
 printf 'not a go trace' > ~/Desktop/not-a-trace.out && echo "ready: ~/Desktop/not-a-trace.out"
 ls ~/Desktop/trace-tasks.out >/dev/null 2>&1 && echo "valid trace present: ~/Desktop/trace-tasks.out" || echo "no valid trace on Desktop — generate one if needed"
 ```
-Then run the app (`open build/bin/trace-go.app`) and confirm:
+Then run the app (`open build/bin/goviz.app`) and confirm:
 1. **Not-a-trace** — Open `~/Desktop/not-a-trace.out`: a red banner appears under the header reading "This file isn't a Go execution trace (or is empty)…", and the center still shows the "Open a Go execution trace" prompt (no crash, no raw error string).
 2. **Dismiss** — Click the `×`: the banner disappears.
 3. **Valid trace** — Open a real trace (e.g. `~/Desktop/trace-tasks.out`): it loads normally, no banner.

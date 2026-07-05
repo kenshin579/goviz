@@ -9,8 +9,8 @@ import (
 
 	exptrace "golang.org/x/exp/trace"
 
-	"github.com/kenshin579/trace-go/internal/causality"
-	"github.com/kenshin579/trace-go/internal/model"
+	"github.com/kenshin579/goviz/internal/causality"
+	"github.com/kenshin579/goviz/internal/model"
 )
 
 // openRegion is an in-progress region awaiting its EventRegionEnd.

@@ -1,4 +1,4 @@
-# trace-go Plan 2F — Timeline Regions + Logs (B4-1)
+# goviz Plan 2F — Timeline Regions + Logs (B4-1)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -65,7 +65,7 @@ func TestRegionAndLogJSON(t *testing.T) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/model/ -run TestRegionAndLogJSON
 ```
 Expected: FAIL — `Region`/`Log` undefined, `Regions`/`Logs` fields missing.
@@ -104,7 +104,7 @@ Add a field to the `TraceSummary` struct (after `Edges`):
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/model/
 ```
 Expected: PASS.
@@ -112,7 +112,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add internal/model/
 git commit -m "feat(model): add Region and Log types"
 ```
@@ -191,7 +191,7 @@ func TestParseRegionsAndLogs(t *testing.T) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/parse/ -run TestParseRegionsAndLogs
 ```
 Expected: FAIL — no regions/logs are parsed yet (the loop ignores those events).
@@ -292,7 +292,7 @@ type openRegion struct {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/parse/ -run TestParseRegionsAndLogs -v
 go test ./internal/...
 ```
@@ -301,7 +301,7 @@ Expected: the new test PASSES; all existing parse/model/causality tests still pa
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add internal/parse/
 git commit -m "feat(parse): parse user regions (nested) and logs"
 ```
@@ -343,7 +343,7 @@ Add `logs?: Log[]` to the `TraceSummary` interface (after `edges`):
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test
 ```
 Expected: all existing unit suites still pass (this is a pure type addition).
@@ -351,7 +351,7 @@ Expected: all existing unit suites still pass (this is a pure type addition).
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/types.ts
 git commit -m "feat(frontend): mirror Region and Log types"
 ```
@@ -427,7 +427,7 @@ describe('layoutTimeline regions and logs', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: FAIL — `totalHeight`/`regions`/`logs` not produced; `regionRowH` ignored.
@@ -553,7 +553,7 @@ export function layoutTimeline(summary: TraceSummary, opts: LayoutOptions): Lane
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: all timelineLayout tests PASS (existing gutter/basic tests still pass — `totalHeight` equals `laneHeight` when there are no regions, and `y` stacking matches because old tests have no regions).
@@ -561,7 +561,7 @@ Expected: all timelineLayout tests PASS (existing gutter/basic tests still pass 
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/timelineLayout.ts frontend/src/lib/timelineLayout.test.ts
 git commit -m "feat(frontend): variable-height timeline layout with regions and logs"
 ```
@@ -624,7 +624,7 @@ describe('hitTimeline', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- hit
 ```
 Expected: FAIL — the old `hitTimeline` signature/return doesn't match.
@@ -670,7 +670,7 @@ export function hitTimeline(lanes: Lane[], x: number, y: number, regionRowH: num
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- hit
 ```
 Expected: all hit tests PASS.
@@ -678,7 +678,7 @@ Expected: all hit tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/hit.ts frontend/src/lib/hit.test.ts
 git commit -m "feat(frontend): variable-height hit-testing for intervals/regions/logs"
 ```
@@ -712,7 +712,7 @@ describe('logTooltip', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- tooltip
 ```
 Expected: FAIL — `regionTooltip`/`logTooltip` not exported.
@@ -736,7 +736,7 @@ export function logTooltip(category: string, message: string): string {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- tooltip
 ```
 Expected: all tooltip tests PASS.
@@ -744,7 +744,7 @@ Expected: all tooltip tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/tooltip.ts frontend/src/lib/tooltip.test.ts
 git commit -m "feat(frontend): add region and log tooltip builders"
 ```
@@ -967,7 +967,7 @@ Write `frontend/src/components/TimelineCanvas.svelte`:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
 ```
 Expected: `svelte-check` 0 errors (the transient TimelineCanvas break from Tasks 4–5 is now resolved); all unit suites pass.
@@ -976,7 +976,7 @@ Expected: `svelte-check` 0 errors (the transient TimelineCanvas break from Tasks
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: builds successfully.
@@ -1029,7 +1029,7 @@ Report observations. If `wails dev` can't launch, report DONE_WITH_CONCERNS noti
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): render region sub-rows and log markers on the timeline"
 ```

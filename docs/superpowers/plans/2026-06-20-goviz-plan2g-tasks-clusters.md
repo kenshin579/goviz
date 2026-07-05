@@ -1,4 +1,4 @@
-# trace-go Plan 2G — Tasks Track + Graph Clusters (B4-2)
+# goviz Plan 2G — Tasks Track + Graph Clusters (B4-2)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -65,7 +65,7 @@ func TestTaskJSON(t *testing.T) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/model/ -run TestTaskJSON
 ```
 Expected: FAIL — `Task` undefined, `Region.Task`/`Log.Task`/`TraceSummary.Tasks` missing.
@@ -103,7 +103,7 @@ Add `Tasks` to the `TraceSummary` struct (after `Logs`):
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/model/
 ```
 Expected: PASS.
@@ -111,7 +111,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add internal/model/
 git commit -m "feat(model): add Task type and region/log task ids"
 ```
@@ -186,7 +186,7 @@ func TestParseTasks(t *testing.T) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/parse/ -run TestParseTasks
 ```
 Expected: FAIL — tasks not parsed, region.Task always 0.
@@ -285,7 +285,7 @@ and add `Tasks: taskList,` to the returned `&model.TraceSummary{...}`.
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test ./internal/parse/ -run TestParseTasks -v
 go test ./internal/...
 ```
@@ -294,7 +294,7 @@ Expected: the new test PASSES; all existing parse/model tests still pass.
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add internal/parse/
 git commit -m "feat(parse): parse tasks and link regions/logs to their task"
 ```
@@ -325,7 +325,7 @@ export interface Task {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test
 ```
 Expected: all existing unit suites pass (pure type addition).
@@ -333,7 +333,7 @@ Expected: all existing unit suites pass (pure type addition).
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/types.ts
 git commit -m "feat(frontend): mirror Task type and region/log task ids"
 ```
@@ -383,7 +383,7 @@ describe('layoutTaskTrack', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- taskTrack
 ```
 Expected: FAIL — cannot find `./taskTrack`.
@@ -449,7 +449,7 @@ export function layoutTaskTrack(tasks: Task[], opts: TaskTrackOptions): TaskTrac
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- taskTrack
 ```
 Expected: all tests PASS.
@@ -457,7 +457,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/taskTrack.ts frontend/src/lib/taskTrack.test.ts
 git commit -m "feat(frontend): pure task-track layout"
 ```
@@ -493,7 +493,7 @@ describe('layoutTimeline topOffset', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: FAIL — first assertion expects y=30, gets 0.
@@ -513,7 +513,7 @@ and change the initial `let y = 0` in `layoutTimeline` to:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: all timelineLayout tests PASS.
@@ -521,7 +521,7 @@ Expected: all timelineLayout tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/timelineLayout.ts frontend/src/lib/timelineLayout.test.ts
 git commit -m "feat(frontend): add topOffset to timeline layout"
 ```
@@ -575,7 +575,7 @@ describe('convexHull', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphCluster
 ```
 Expected: FAIL — cannot find `./graphCluster`.
@@ -626,7 +626,7 @@ export function convexHull(points: [number, number][]): [number, number][] {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphCluster
 ```
 Expected: all tests PASS.
@@ -634,7 +634,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/graphCluster.ts frontend/src/lib/graphCluster.test.ts
 git commit -m "feat(frontend): add task clustering and convex hull"
 ```
@@ -673,7 +673,7 @@ describe('taskTooltip', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- "format|tooltip"
 ```
 Expected: FAIL — `taskColor`/`taskTooltip` not exported.
@@ -701,7 +701,7 @@ export function taskTooltip(name: string, start: number, end: number): string {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- "format|tooltip"
 ```
 Expected: PASS.
@@ -709,7 +709,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/format.ts frontend/src/lib/format.test.ts frontend/src/lib/tooltip.ts frontend/src/lib/tooltip.test.ts
 git commit -m "feat(frontend): add task color palette and task tooltip"
 ```
@@ -731,7 +731,7 @@ In `frontend/src/lib/graphModel.ts`, add to the `GraphNode` interface (after `vy
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphModel
 ```
 Expected: graphModel tests still pass (optional field, no behavior change).
@@ -739,7 +739,7 @@ Expected: graphModel tests still pass (optional field, no behavior change).
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/graphModel.ts
 git commit -m "feat(frontend): add cluster field to graph node"
 ```
@@ -835,9 +835,9 @@ In `onPointerMove`, before the existing `const h = hitTimeline(...)` line, inser
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds.
@@ -845,7 +845,7 @@ Expected: 0 check errors; all unit suites pass; `wails build` succeeds.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): render the timeline task track"
 ```
@@ -950,9 +950,9 @@ In `draw()`, immediately after `ctx.fillRect(0, 0, cssWidth, cssHeight)` and BEF
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds.
@@ -1005,7 +1005,7 @@ Report observations. If `wails dev` can't launch, report DONE_WITH_CONCERNS noti
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/GraphCanvas.svelte
 git commit -m "feat(frontend): static task clusters with hulls on the graph"
 ```
