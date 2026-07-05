@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { OpenTraceDialog } from '../wailsjs/go/main/App'
+  import { OpenTraceDialog, LoadSampleTrace } from '../wailsjs/go/main/App'
   import { traceStore } from './stores/trace'
   import { prefs } from './stores/prefs'
   import type { TraceSummary } from './lib/types'
@@ -7,6 +7,7 @@
   import Controls from './components/Controls.svelte'
   import GraphCanvas from './components/GraphCanvas.svelte'
   import Legend from './components/Legend.svelte'
+  import EmptyState from './components/EmptyState.svelte'
 
   const { summary } = traceStore
   const { theme, sys } = prefs
@@ -24,7 +25,30 @@
     loading = true
     try {
       const s = (await OpenTraceDialog()) as unknown as TraceSummary | null
-      if (s) traceStore.loadSummary(s)
+      if (s) {
+        traceStore.loadSummary(s)
+        onLoaded()
+      }
+    } catch (e) {
+      error = String(e)
+    } finally {
+      loading = false
+    }
+  }
+
+  function onLoaded() {
+    // Task 14 wires first-run onboarding here.
+  }
+
+  async function openSample() {
+    error = ''
+    loading = true
+    try {
+      const s = (await LoadSampleTrace()) as unknown as TraceSummary | null
+      if (s) {
+        traceStore.loadSummary(s)
+        onLoaded()
+      }
     } catch (e) {
       error = String(e)
     } finally {
@@ -68,7 +92,7 @@
     <section class="timeline"><TimelineCanvas /></section>
     <section class="graph"><GraphCanvas /></section>
   {:else}
-    <section class="empty">Open a Go execution trace (.out) to begin.</section>
+    <EmptyState on:sample={openSample} on:open={open} />
   {/if}
   {#if $summary}<Legend />{/if}
 </main>
@@ -92,5 +116,4 @@
   .timeline { flex: 0 0 42%; overflow: auto; border-bottom: 1px solid var(--border); position: relative; }
   .graph { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; }
   .graph :global(.graph-wrap) { flex: 1; min-height: 0; }
-  .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--faint); }
 </style>
