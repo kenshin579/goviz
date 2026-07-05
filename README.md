@@ -1,4 +1,4 @@
-# goviz
+# GoViz
 
 A desktop tool for **seeing** Go concurrency. `goviz` reads a standard Go execution trace and renders it as a **hybrid view**: a goroutine timeline on top and a live, force-directed goroutine graph below — both driven by a single, scrubbable playhead. Press play and watch goroutines run, block, and unblock each other over time.
 
