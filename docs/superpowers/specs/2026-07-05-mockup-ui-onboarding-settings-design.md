@@ -141,8 +141,9 @@ app.go           ← LoadSampleTrace() 바인딩 추가 (유일한 Go 작업)
 공통:
 - 트레이스 **최초 로드 1회** 자동 표시 (`tracego.onboarded`가 false일 때 → 표시 후 true 기록).
   샘플 로드/파일 열기 모두 트리거.
-- 표시 방식은 `tracego.guide` 설정을 따른다. 종료(완료/스킵/확인) 시 **자동 재생 시작**
-  (목업 동작).
+- 표시 방식은 `tracego.guide` 설정을 따른다. **최초 1회 자동 표시 경로에서만** 종료(완료/스킵/확인)
+  시 자동 재생을 시작한다 (목업 동작). `?` 버튼으로 재실행한 투어는 종료 시 사용자의 재생
+  상태를 건드리지 않는다 (코드 리뷰에서 확정한 편차 — 일시정지해 둔 탐사 지점 보존).
 
 **투어 (GuideTour.svelte):**
 - 대상 4개: `[data-tour="timeline"|"header"|"graph"|"legend"]` 순서는 목업의
@@ -185,64 +186,64 @@ app.go           ← LoadSampleTrace() 바인딩 추가 (유일한 Go 작업)
 구현·리뷰 시 아래 표의 모든 행을 대조한다. (목업 줄 번호는 `TraceGo Onboarding.dc.html` 기준)
 
 ### 헤더 (목업 L20-46)
-- [ ] 트레이스 열기 버튼 (accent, i18n) — App.svelte
-- [ ] info 텍스트 `고루틴 N · 엣지 N · X ms` (i18n) — App.svelte
-- [ ] 재생/일시정지 버튼 + `Play/Pause (Space)` tooltip — Controls.svelte
-- [ ] 속도 select 0.25/0.5/1/2/4× — Controls.svelte (기존)
-- [ ] 시스템 고루틴 체크박스 (i18n + 지속화) — Controls.svelte
-- [ ] ⚙ 설정 버튼 (원형, tooltip) — App.svelte
-- [ ] ? 도움말 버튼 (원형, tooltip, 로드 시 투어 실행) — App.svelte
+- [x] 트레이스 열기 버튼 (accent, i18n) — App.svelte
+- [x] info 텍스트 `고루틴 N · 엣지 N · X ms` (i18n) — App.svelte
+- [x] 재생/일시정지 버튼 + `Play/Pause (Space)` tooltip — Controls.svelte
+- [x] 속도 select 0.25/0.5/1/2/4× — Controls.svelte (기존)
+- [x] 시스템 고루틴 체크박스 (i18n + 지속화) — Controls.svelte
+- [x] ⚙ 설정 버튼 (원형, tooltip) — App.svelte
+- [x] ? 도움말 버튼 (원형, tooltip, 로드 시 투어 실행) — App.svelte
 
 ### 설정 팝업 (목업 L48-88, L600-618)
-- [ ] 오버레이 + 320px 패널 + 제목 + × — SettingsPopup.svelte
-- [ ] 언어 세그먼트 English/한국어 — SettingsPopup.svelte
-- [ ] 테마 세그먼트 다크/라이트 — SettingsPopup.svelte
-- [ ] 안내 방식 세그먼트 투어/콜아웃/힌트 — SettingsPopup.svelte
-- [ ] 토글: 반복 재생 / 노드 이름 항상 표시 / 색약 친화 색상 / 시스템 고루틴 — SettingsPopup.svelte
-- [ ] 바깥 클릭·×로 닫힘, 패널 내부 클릭 유지 — SettingsPopup.svelte
-- [ ] 모든 설정 localStorage 지속 + 재시작 후 복원 — stores/prefs.ts
+- [x] 오버레이 + 320px 패널 + 제목 + × — SettingsPopup.svelte
+- [x] 언어 세그먼트 English/한국어 — SettingsPopup.svelte
+- [x] 테마 세그먼트 다크/라이트 — SettingsPopup.svelte
+- [x] 안내 방식 세그먼트 투어/콜아웃/힌트 — SettingsPopup.svelte
+- [x] 토글: 반복 재생 / 노드 이름 항상 표시 / 색약 친화 색상 / 시스템 고루틴 — SettingsPopup.svelte
+- [x] 바깥 클릭·×로 닫힘, 패널 내부 클릭 유지 — SettingsPopup.svelte
+- [x] 모든 설정 localStorage 지속 + 재시작 후 복원 — stores/prefs.ts
 
 ### 빈 화면 rich (목업 L99-153)
-- [ ] 제목 + 설명 (i18n) — EmptyState.svelte
-- [ ] 카드1: 미니 타임라인 3레인 (palette 색, 목업 비율) + 제목/설명({run}/{blk} 치환) — EmptyState.svelte
-- [ ] 카드2: 미니 그래프 SVG (노드4/엣지3) + 제목/설명 — EmptyState.svelte
-- [ ] ▶ 샘플 트레이스 버튼 (primary) — EmptyState.svelte → LoadSampleTrace
-- [ ] 트레이스 열기… (.out) 버튼 (secondary) — EmptyState.svelte
-- [ ] `go test -trace` 코드 힌트 (i18n 전/후 문구) — EmptyState.svelte
+- [x] 제목 + 설명 (i18n) — EmptyState.svelte
+- [x] 카드1: 미니 타임라인 3레인 (palette 색, 목업 비율) + 제목/설명({run}/{blk} 치환) — EmptyState.svelte
+- [x] 카드2: 미니 그래프 SVG (노드4/엣지3) + 제목/설명 — EmptyState.svelte
+- [x] ▶ 샘플 트레이스 버튼 (primary) — EmptyState.svelte → LoadSampleTrace
+- [x] 트레이스 열기… (.out) 버튼 (secondary) — EmptyState.svelte
+- [x] `go test -trace` 코드 힌트 (i18n 전/후 문구) — EmptyState.svelte
 
 ### 타임라인/그래프 영역 (목업 L167-230)
-- [ ] 타임라인 인라인 힌트 스트립 (sticky, inline 방식일 때) — TimelineCanvas.svelte
-- [ ] 그래프 인라인 힌트 스트립 (inline 방식일 때) — GraphCanvas.svelte
-- [ ] 콜아웃 칩 ①(타임라인 우상단)·②(타임라인 좌하단)·③(그래프 좌상단)·④(그래프 우하단) — GuideCallouts.svelte
-- [ ] 노드 라벨 토글 반영 (labels ?? inline 기본) — GraphCanvas.svelte
-- [ ] 팔레트(테마·색약) 반영해 캔버스 재렌더 — Timeline/GraphCanvas
-- [ ] 스크럽·포커스 체인·엣지 플래시 기존 동작 회귀 없음 — (기존 기능)
+- [x] 타임라인 인라인 힌트 스트립 (sticky, inline 방식일 때) — TimelineCanvas.svelte (App.svelte에 구현)
+- [x] 그래프 인라인 힌트 스트립 (inline 방식일 때) — GraphCanvas.svelte (App.svelte에 구현)
+- [x] 콜아웃 칩 ①(타임라인 우상단)·②(타임라인 좌하단)·③(그래프 좌상단)·④(그래프 우하단) — GuideCallouts.svelte (App.svelte + CalloutChip.svelte에 구현)
+- [x] 노드 라벨 토글 반영 (labels ?? inline 기본) — GraphCanvas.svelte
+- [x] 팔레트(테마·색약) 반영해 캔버스 재렌더 — Timeline/GraphCanvas
+- [x] 스크럽·포커스 체인·엣지 플래시 기존 동작 회귀 없음 — (기존 기능)
 
 ### 범례 (목업 L232-250)
-- [ ] 상태 4항목 + 엣지 3항목 `(inferred/추정)` (i18n, palette) — Legend.svelte
-- [ ] 중복 "inferred link" 항목 제거 — Legend.svelte
-- [ ] inline 방식: 그룹 라벨 2개 + 우측 포커스 힌트 — Legend.svelte
+- [x] 상태 4항목 + 엣지 3항목 `(inferred/추정)` (i18n, palette) — Legend.svelte
+- [x] 중복 "inferred link" 항목 제거 — Legend.svelte
+- [x] inline 방식: 그룹 라벨 2개 + 우측 포커스 힌트 — Legend.svelte
 
 ### 첫 실행 배너 (목업 L90-97)
-- [ ] `처음이신가요?` 배너 + [확인 — 재생 시작] (콜아웃 방식일 때) — GuideCallouts.svelte
+- [x] `처음이신가요?` 배너 + [확인 — 재생 시작] (콜아웃 방식일 때) — GuideCallouts.svelte (App.svelte에 구현)
 
 ### 투어 (목업 L253-266, L458-490)
-- [ ] 스포트라이트 (rect+4px, 9999px shadow, 0.25s transition) — GuideTour.svelte
-- [ ] 팝오버: STEP 라벨/제목/본문/건너뛰기/이전(1단계 흐림)/다음/완료—재생 — GuideTour.svelte
-- [ ] 4단계 내용 (타임라인→재생→그래프→범례&포커스, en/ko) — lib/i18n.ts
-- [ ] 위치 계산 (아래→위→클램프, POP_H 210) 순수 함수 + 테스트 — lib/guide.ts
-- [ ] 리사이즈 시 재측정 — GuideTour.svelte
-- [ ] 투어 중 재생 일시정지, 종료 시 재생 — GuideTour.svelte
+- [x] 스포트라이트 (rect+4px, 9999px shadow, 0.25s transition) — GuideTour.svelte
+- [x] 팝오버: STEP 라벨/제목/본문/건너뛰기/이전(1단계 흐림)/다음/완료—재생 — GuideTour.svelte
+- [x] 4단계 내용 (타임라인→재생→그래프→범례&포커스, en/ko) — lib/i18n.ts
+- [x] 위치 계산 (아래→위→클램프, POP_H 210) 순수 함수 + 테스트 — lib/guide.ts
+- [x] 리사이즈 시 재측정 — GuideTour.svelte
+- [x] 투어 중 재생 일시정지, 종료 시 재생 — GuideTour.svelte (종료 시 재생은 최초 온보딩 투어만 — `?` 재실행 종료 시에는 재생하지 않음, App.svelte 의도적 처리)
 
 ### 동작·상태 (목업 스크립트)
-- [ ] Space 재생/정지 + 폼 요소 가드 — App.svelte (기존)
-- [ ] 반복 재생 (끝→시작 wrap, 초과분 이월) — lib/playback.ts
-- [ ] 색 단어 치환 {run}/{blk} (표준/색약 × en/ko) — lib/i18n.ts
-- [ ] 언어 로케일 자동 감지 (최초 실행) — lib/prefs.ts
-- [ ] 가이드 최초 1회 자동 표시 (`tracego.onboarded`) — App.svelte
-- [ ] 색약 팔레트 (#0072b2/#d55e00) — lib/palette.ts
-- [ ] 테마별 DIM/RING 색 — lib/palette.ts
-- [ ] CSS 변수 dark/light 두 세트 — style.css / App.svelte
+- [x] Space 재생/정지 + 폼 요소 가드 — App.svelte (기존)
+- [x] 반복 재생 (끝→시작 wrap, 초과분 이월) — lib/playback.ts
+- [x] 색 단어 치환 {run}/{blk} (표준/색약 × en/ko) — lib/i18n.ts
+- [x] 언어 로케일 자동 감지 (최초 실행) — lib/prefs.ts
+- [x] 가이드 최초 1회 자동 표시 (`tracego.onboarded`) — App.svelte
+- [x] 색약 팔레트 (#0072b2/#d55e00) — lib/palette.ts
+- [x] 테마별 DIM/RING 색 — lib/palette.ts
+- [x] CSS 변수 dark/light 두 세트 — style.css / App.svelte
 
 ### 의도적 제외 (3건)
 1. `minimal` 빈 화면 변형 — rich 채택 (목업의 A/B 시안).
