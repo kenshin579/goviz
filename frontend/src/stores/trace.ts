@@ -1,6 +1,7 @@
 import { writable, get, type Writable } from 'svelte/store'
 import type { TraceSummary } from '../lib/types'
 import { nextPlayhead } from '../lib/playback'
+import { prefs } from './prefs'
 
 // dt seed for the first animation frame after play/resume (~one 60fps frame).
 const SEED_FRAME_MS = 16
@@ -30,7 +31,7 @@ export interface TraceStore {
 // state. The playhead is always clamped to [startTime, endTime]. Playback is
 // driven by requestAnimationFrame, but the per-frame step (advance) is a plain
 // method so it can be unit-tested without a real animation frame.
-export function createTraceStore(): TraceStore {
+export function createTraceStore(getLoop: () => boolean = () => false): TraceStore {
   const summary = writable<TraceSummary | null>(null)
   const playhead = writable<number>(0)
   const playing = writable<boolean>(false)
@@ -120,7 +121,7 @@ export function createTraceStore(): TraceStore {
     },
     advance(dtMs) {
       if (!current) return
-      const r = nextPlayhead(get(playhead), dtMs, get(speed), current.startTime, current.endTime)
+      const r = nextPlayhead(get(playhead), dtMs, get(speed), current.startTime, current.endTime, undefined, getLoop())
       playhead.set(r.time)
       if (r.atEnd) api.pause()
     },
@@ -129,4 +130,4 @@ export function createTraceStore(): TraceStore {
 }
 
 // The app-wide singleton store.
-export const traceStore = createTraceStore()
+export const traceStore = createTraceStore(() => get(prefs.loop))

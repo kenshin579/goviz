@@ -14,7 +14,7 @@
   import { visibleGoroutines } from '../lib/filter'
   import type { GraphNode, GraphLink } from '../lib/graphModel'
   import { stateAt, activeEdges } from '../lib/activeAt'
-  import { stateColor, DIM_COLOR, categoryColor, goroutineLabel, taskColor } from '../lib/format'
+  import { goroutineLabel, taskColor } from '../lib/format'
   import { clusterByTask, convexHull } from '../lib/graphCluster'
   import { edgesCrossed, cometPoint, FLASH_MS, MAX_PARTICLES } from '../lib/flash'
   import type { Goroutine, CausalEdge } from '../lib/types'
@@ -23,14 +23,18 @@
   import { causalNeighbors } from '../lib/causalFocus'
   import { collapseGraph } from '../lib/graphCollapse'
   import { groupGoroutines } from '../lib/grouping'
+  import { prefs } from '../stores/prefs'
+  import { effectiveLabels } from '../lib/prefs'
 
   const { summary, playhead, showSystem, selectedId, collapsedGroups, toggleGroup } = traceStore
+  const { dict, palette, labels, guide } = prefs
+
+  $: showLabels = effectiveLabels($labels, $guide)
 
   let container: HTMLDivElement
   let canvas: HTMLCanvasElement
   let cssWidth = 600
   let cssHeight = 360
-  const GHOST_ALPHA = 0.15
   const GROUP_NODE_COLOR = '#7a8290'
 
   let nodes: GraphNode[] = []
@@ -100,7 +104,7 @@
         const a = nodeById.get(remap.get(e.from) ?? e.from)
         const b = nodeById.get(remap.get(e.to) ?? e.to)
         if (!a || !b || a === b) continue // skip if either endpoint is hidden or both fold into one super-node
-        comets.push({ from: a, to: b, color: categoryColor(e.category), start: performance.now() })
+        comets.push({ from: a, to: b, color: $palette.category[e.category] ?? $palette.dim, start: performance.now() })
       }
       if (comets.length) ensureAnim()
     }
@@ -124,7 +128,7 @@
 
   // Redraw (recolor + comets) on time/selection change. Does NOT touch the sim.
   $: chain = $summary && $selectedId !== null ? causalNeighbors($summary.edges, $selectedId) : null
-  $: void [$playhead, $selectedId], draw()
+  $: void [$playhead, $selectedId, $palette, showLabels], draw()
 
   function draw() {
     if (!canvas) return
@@ -135,7 +139,7 @@
     canvas.height = Math.round(cssHeight * dpr)
     canvas.style.height = cssHeight + 'px'
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    ctx.fillStyle = '#0f1117'
+    ctx.fillStyle = $palette.canvasBg
     ctx.fillRect(0, 0, cssWidth, cssHeight)
 
     // Static task-cluster hulls (background layer).
@@ -148,7 +152,7 @@
     }
     const taskName = new Map<number, string>(($summary?.tasks ?? []).map((t) => [t.id, t.name]))
     for (const [cid, members] of byCluster) {
-      ctx.globalAlpha = chain && !members.some((n) => chain.has(n.id)) ? GHOST_ALPHA : 1
+      ctx.globalAlpha = chain && !members.some((n) => chain.has(n.id)) ? $palette.ghost : 1
       const pts = members.map((n) => [n.x!, n.y!] as [number, number])
       const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length
       const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length
@@ -193,13 +197,13 @@
         // Incident = directly touches the selected node (its unblockers/unblockees);
         // edges between two chain peers are intentionally not emphasized.
         const incident = s.id === $selectedId || tg.id === $selectedId
-        ctx.globalAlpha = incident ? 1 : GHOST_ALPHA
-        ctx.strokeStyle = incident ? categoryColor(l.category) : DIM_COLOR
+        ctx.globalAlpha = incident ? 1 : $palette.ghost
+        ctx.strokeStyle = incident ? ($palette.category[l.category] ?? $palette.dim) : $palette.dim
         ctx.lineWidth = incident ? 2.5 : 1
       } else {
         const isActive = active.has(`${s.id}->${tg.id}`)
         ctx.globalAlpha = 1
-        ctx.strokeStyle = isActive ? categoryColor(l.category) : DIM_COLOR
+        ctx.strokeStyle = isActive ? ($palette.category[l.category] ?? $palette.dim) : $palette.dim
         ctx.lineWidth = isActive ? 2.5 : 1
       }
       ctx.beginPath()
@@ -215,30 +219,36 @@
     for (const n of nodes) {
       if (n.x == null) continue
       const inChain = !chain ? true : n.group ? n.group.memberIds.some((id) => chain.has(id)) : chain.has(n.id)
-      ctx.globalAlpha = inChain ? 1 : GHOST_ALPHA
+      ctx.globalAlpha = inChain ? 1 : $palette.ghost
       if (n.group) {
         ctx.fillStyle = GROUP_NODE_COLOR
         ctx.beginPath()
         ctx.arc(n.x, n.y!, 9, 0, Math.PI * 2)
         ctx.fill()
-        ctx.strokeStyle = '#ffffff'
+        ctx.strokeStyle = $palette.ring
         ctx.lineWidth = 1.5
         ctx.stroke()
-        ctx.fillStyle = '#cdd3df'
+        ctx.fillStyle = $palette.text
         ctx.font = '10px system-ui, sans-serif'
         ctx.textBaseline = 'middle'
         ctx.fillText(n.label, n.x + 12, n.y!)
       } else {
         const g = goroutineById.get(n.id)
         const st = g ? stateAt(g, t) : null
-        ctx.fillStyle = st ? stateColor(st) : DIM_COLOR // dim if not alive at t
+        ctx.fillStyle = st ? ($palette.state[st] ?? $palette.dim) : $palette.dim // dim if not alive at t
         ctx.beginPath()
         ctx.arc(n.x, n.y!, 9, 0, Math.PI * 2)
         ctx.fill()
         if (n.id === $selectedId) {
-          ctx.strokeStyle = '#ffffff'
+          ctx.strokeStyle = $palette.ring
           ctx.lineWidth = 2
           ctx.stroke()
+        }
+        if (showLabels) {
+          ctx.fillStyle = $palette.text
+          ctx.font = '10px system-ui, sans-serif'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(n.label, n.x + 12, n.y!)
         }
       }
     }
@@ -301,7 +311,7 @@
         tip = { text: n.label, x: px, y: py }
       } else {
         const g = goroutineById.get(n.id)
-        tip = { text: nodeTooltip(n.label, g ? stateAt(g, $playhead) : null), x: px, y: py }
+        tip = { text: nodeTooltip(n.label, g ? stateAt(g, $playhead) : null, $dict), x: px, y: py }
       }
       return
     }
@@ -316,7 +326,7 @@
     if (best) {
       const s = best.l.source as unknown as GraphNode
       const t = best.l.target as unknown as GraphNode
-      tip = { text: edgeTooltip(best.l.category, labelOf(s.id), labelOf(t.id)), x: px, y: py }
+      tip = { text: edgeTooltip(best.l.category, labelOf(s.id), labelOf(t.id), $dict), x: px, y: py }
     } else {
       tip = null
     }
@@ -360,7 +370,7 @@
   .graph-wrap { width: 100%; height: 100%; min-height: 280px; position: relative; }
   .tip {
     position: absolute; pointer-events: none; white-space: pre; z-index: 10;
-    background: #161922; color: #cdd3df; border: 1px solid #2a2e38;
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
     border-radius: 4px; padding: 4px 8px; font-size: 12px; line-height: 1.35;
   }
 </style>

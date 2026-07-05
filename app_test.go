@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/kenshin579/trace-go/internal/model"
 )
 
 // writeSampleTrace runs an unbuffered send/recv rendezvous under the tracer and
@@ -71,5 +73,34 @@ func TestOpenTraceNotATraceErrors(t *testing.T) {
 	// Partial match: the not-a-trace message is long and embeds a shell example.
 	if !strings.Contains(err.Error(), "isn't a Go execution trace") {
 		t.Fatalf("unfriendly not-a-trace error: %q", err.Error())
+	}
+}
+
+func TestLoadSampleTraceInvariants(t *testing.T) {
+	app := NewApp()
+	sum, err := app.LoadSampleTrace()
+	if err != nil {
+		t.Fatalf("LoadSampleTrace: %v", err)
+	}
+	if len(sum.Goroutines) < 5 {
+		t.Fatalf("sample too small: %d goroutines", len(sum.Goroutines))
+	}
+	if sum.EndTime <= sum.StartTime {
+		t.Fatalf("bad time range: %d..%d", sum.StartTime, sum.EndTime)
+	}
+	hasChannelEdge, hasMutexEdge := false, false
+	for _, e := range sum.Edges {
+		switch e.Category {
+		case model.CategoryChannel:
+			hasChannelEdge = true
+		case model.CategoryMutex:
+			hasMutexEdge = true
+		}
+	}
+	if !hasChannelEdge {
+		t.Fatal("expected at least one channel causal edge in the sample")
+	}
+	if !hasMutexEdge {
+		t.Fatal("expected at least one mutex causal edge in the sample")
 	}
 }

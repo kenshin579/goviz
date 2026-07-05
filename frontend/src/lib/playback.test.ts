@@ -33,3 +33,16 @@ describe('nextPlayhead', () => {
     expect(r.atEnd).toBe(true)
   })
 })
+
+describe('nextPlayhead loop', () => {
+  it('wraps past the end instead of clamping when loop is on', () => {
+    // span 100, at 1x over base 1000ms: 150ms from t=95 lands 10 units past end.
+    const r = nextPlayhead(95, 150, 1, 0, 100, 1000, true)
+    expect(r.atEnd).toBe(false)
+    expect(r.time).toBeCloseTo(10)
+  })
+  it('still clamps at the end when loop is off', () => {
+    const r = nextPlayhead(95, 150, 1, 0, 100, 1000, false)
+    expect(r).toEqual({ time: 100, atEnd: true })
+  })
+})

@@ -1,28 +1,31 @@
 import type { IntervalState } from './format'
 import type { EdgeCategory } from './types'
 
+// The slice of the i18n Dict that tooltips need (structural — pass the whole Dict).
+export interface TooltipCopy {
+  states: Record<IntervalState, string>
+  notAlive: string
+  cats: Record<EdgeCategory, string>
+  inferred: string
+}
+
 // intervalTooltip describes a hovered timeline interval. The block reason is
-// only meaningful (and shown) for blocked intervals that carry one.
-export function intervalTooltip(label: string, state: IntervalState, blockReason: string): string {
-  const detail = state === 'blocked' && blockReason ? `${state} · ${blockReason}` : state
+// only meaningful (and shown) for blocked intervals that carry one; reasons are
+// raw runtime strings ("chan receive") and are intentionally not translated.
+export function intervalTooltip(label: string, state: IntervalState, blockReason: string, L: TooltipCopy): string {
+  const detail = state === 'blocked' && blockReason ? `${L.states[state]} · ${blockReason}` : L.states[state]
   return `${label}\n${detail}`
 }
 
 // nodeTooltip describes a hovered graph node at the current playhead time.
-export function nodeTooltip(label: string, state: IntervalState | null): string {
-  return `${label}\n${state ?? 'not running at this time'}`
+export function nodeTooltip(label: string, state: IntervalState | null, L: TooltipCopy): string {
+  return `${label}\n${state ? L.states[state] : L.notAlive}`
 }
 
 // edgeTooltip describes a hovered causal edge. The trace exposes no channel
-// identity or transferred value, so every relation is labelled "(inferred)".
-export function edgeTooltip(category: EdgeCategory, fromLabel: string, toLabel: string): string {
-  const kind =
-    category === 'channel'
-      ? 'channel communication'
-      : category === 'mutex'
-        ? 'mutex synchronization'
-        : 'unblock'
-  return `${fromLabel} → ${toLabel}\n${kind} (inferred)`
+// identity or transferred value, so every relation is labelled inferred.
+export function edgeTooltip(category: EdgeCategory, fromLabel: string, toLabel: string, L: TooltipCopy): string {
+  return `${fromLabel} → ${toLabel}\n${L.cats[category]} (${L.inferred})`
 }
 
 // regionTooltip shows a hovered region's name and its duration (ms, 3 decimals).

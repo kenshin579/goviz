@@ -10,8 +10,10 @@
   import { intervalTooltip, regionTooltip, logTooltip, taskTooltip } from '../lib/tooltip'
   import { taskColor } from '../lib/format'
   import { causalNeighbors } from '../lib/causalFocus'
+  import { prefs } from '../stores/prefs'
 
   const { summary, playhead, showSystem, selectedId, setPlayhead, collapsedGroups, toggleGroup } = traceStore
+  const { dict, palette } = prefs
 
   let container: HTMLDivElement
   let canvas: HTMLCanvasElement
@@ -23,8 +25,6 @@
   const REGION_COLOR = '#5a6b8c'
   const LOG_COLOR = '#e0c030'
   const TASK_ROW_H = 14
-  const GROUP_HEADER_BG = '#1b2130'
-  const GHOST_ALPHA = 0.15
 
   let dragging = false
   let tip: { text: string; x: number; y: number } | null = null
@@ -41,7 +41,7 @@
         { ...$summary, goroutines: visible },
         groups,
         $collapsedGroups,
-        { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP, gutter: GUTTER_W, regionRowH: REGION_ROW_H, topOffset: taskTrack.height },
+        { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP, gutter: GUTTER_W, regionRowH: REGION_ROW_H, topOffset: taskTrack.height, stateColor: (s) => $palette.state[s] ?? $palette.dim },
       )
     : ([] as TimelineRow[])
   $: lanes = rows.filter((r): r is { kind: 'lane' } & Lane => r.kind === 'lane')
@@ -50,7 +50,7 @@
 
   $: chain = $summary && $selectedId !== null ? causalNeighbors($summary.edges, $selectedId) : null
 
-  $: void [$playhead, lanes, headers, cssWidth, cssHeight, $selectedId, taskTrack], draw()
+  $: void [$playhead, lanes, headers, cssWidth, cssHeight, $selectedId, taskTrack, $palette], draw()
 
   function fitLabel(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
     if (ctx.measureText(text).width <= maxW) return text
@@ -70,7 +70,7 @@
     canvas.style.height = cssHeight + 'px'
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-    ctx.fillStyle = '#0f1117'
+    ctx.fillStyle = $palette.canvasBg
     ctx.fillRect(0, 0, cssWidth, cssHeight)
 
     // Task track (top): bars by parent depth + a gutter label.
@@ -82,7 +82,7 @@
         ctx.fillStyle = taskColor(bar.id)
         ctx.fillRect(bar.x, by + 1, bar.width, TASK_ROW_H - 2)
         if (bar.width > 16) {
-          ctx.fillStyle = '#0f1117'
+          ctx.fillStyle = $palette.canvasBg
           ctx.fillText(fitLabel(ctx, bar.name, bar.width - 4), bar.x + 3, by + TASK_ROW_H / 2)
         }
       }
@@ -92,16 +92,16 @@
     }
 
     // In focus mode, lanes whose goroutine is not in the selected chain are ghosted.
-    const laneAlpha = (gid: number) => (chain && !chain.has(gid) ? GHOST_ALPHA : 1)
+    const laneAlpha = (gid: number) => (chain && !chain.has(gid) ? $palette.ghost : 1)
 
     // Group header rows: a disclosure triangle + "name ×count" on a faint band.
     ctx.globalAlpha = 1
     ctx.textBaseline = 'middle'
     ctx.font = '11px system-ui, sans-serif'
     for (const h of headers) {
-      ctx.fillStyle = GROUP_HEADER_BG
+      ctx.fillStyle = $palette.headerBand
       ctx.fillRect(0, h.y, cssWidth, h.height)
-      ctx.fillStyle = '#cdd3df'
+      ctx.fillStyle = $palette.text
       ctx.fillText(fitLabel(ctx, `${h.collapsed ? '▸' : '▾'} ${h.name} ×${h.count}`, cssWidth - 12), 6, h.y + h.height / 2)
     }
 
@@ -149,7 +149,7 @@
     // Lane labels in the gutter.
     ctx.font = '11px system-ui, sans-serif'
     ctx.textBaseline = 'middle'
-    ctx.fillStyle = '#cdd3df'
+    ctx.fillStyle = $palette.text
     for (const lane of lanes) {
       ctx.globalAlpha = laneAlpha(lane.goroutineId)
       ctx.fillText(fitLabel(ctx, lane.label, GUTTER_W - 10), 4, lane.y + lane.height / 2)
@@ -159,7 +159,7 @@
     // Selected lane outline (full lane incl. region rows).
     for (const lane of lanes) {
       if (lane.goroutineId === $selectedId) {
-        ctx.strokeStyle = '#ffffff'
+        ctx.strokeStyle = $palette.ring
         ctx.lineWidth = 1.5
         ctx.strokeRect(GUTTER_W + 0.5, lane.y + 0.5, cssWidth - GUTTER_W - 1, lane.totalHeight - 1)
       }
@@ -170,7 +170,7 @@
       const scale = makeTimeScale($summary.startTime, $summary.endTime, GUTTER_W, cssWidth)
       const x = scale.toPixel($playhead)
       const bottom = rowsHeight(rows)
-      ctx.strokeStyle = '#5b8def'
+      ctx.strokeStyle = $palette.accent
       ctx.lineWidth = 2
       ctx.beginPath()
       ctx.moveTo(x, 0)
@@ -215,7 +215,7 @@
     if (!h) {
       tip = null
     } else if (h.kind === 'interval') {
-      tip = { text: intervalTooltip(h.lane.label, h.rect.state, h.rect.blockReason), x, y }
+      tip = { text: intervalTooltip(h.lane.label, h.rect.state, h.rect.blockReason, $dict), x, y }
     } else if (h.kind === 'region') {
       tip = { text: regionTooltip(h.region.name, h.region.start, h.region.end), x, y }
     } else {
@@ -261,7 +261,7 @@
   .timeline-canvas-wrap { width: 100%; position: relative; }
   .tip {
     position: absolute; pointer-events: none; white-space: pre; z-index: 10;
-    background: #161922; color: #cdd3df; border: 1px solid #2a2e38;
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
     border-radius: 4px; padding: 4px 8px; font-size: 12px; line-height: 1.35;
   }
 </style>
