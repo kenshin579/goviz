@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { layoutTimelineRows, hitGroupHeader, rowsHeight, GROUP_HEADER_H } from './timelineLayout'
+import { layoutTimelineRows, hitGroupHeader, rowsHeight, GROUP_HEADER_H, type TimelineRow } from './timelineLayout'
 import { groupGoroutines } from './grouping'
 
 describe('layoutTimelineRows', () => {
@@ -44,6 +44,13 @@ describe('layoutTimelineRows', () => {
     const lane = rows[0] as any
     expect(lane.rects[0].x).toBe(0)
     expect(lane.rects[0].width).toBe(200) // full span
+  })
+
+  it('uses opts.stateColor when provided', () => {
+    const gs = [mk(1, 'main.solo')] as any[]
+    const rows = layoutTimelineRows(summary(gs), groupGoroutines(gs), new Set<string>(), { ...opts, stateColor: () => '#123456' })
+    const lane = rows.find((r) => r.kind === 'lane') as Extract<TimelineRow, { kind: 'lane' }>
+    expect(lane.rects[0].color).toBe('#123456')
   })
 })
 

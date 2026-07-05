@@ -44,6 +44,7 @@ export interface LayoutOptions {
   gutter?: number // left offset reserved for lane labels
   regionRowH?: number // height of one region sub-row (0/undefined => no region rows)
   topOffset?: number // reserved space above the first lane (e.g. a task track)
+  stateColor?: (s: IntervalState) => string // theme-aware override (default: dark palette)
 }
 
 /** Height of a group-header row in device-independent pixels (~1rem text). */
@@ -62,6 +63,7 @@ function buildLane(
   laneHeight: number,
   logsByGo: Map<number, Log[]>,
   y: number,
+  colorOf: (s: IntervalState) => string,
 ): Lane {
   const rects: LayoutRect[] = (g.intervals ?? []).map((iv) => {
     const x = scale.toPixel(iv.start)
@@ -69,7 +71,7 @@ function buildLane(
       x,
       width: Math.max(1, scale.toPixel(iv.end) - x),
       state: iv.state,
-      color: stateColor(iv.state),
+      color: colorOf(iv.state),
       blockReason: iv.blockReason ?? '',
     }
   })
@@ -113,6 +115,7 @@ export function layoutTimelineRows(
   const regionRowH = opts.regionRowH ?? 0
   const scale = makeTimeScale(summary.startTime, summary.endTime, gutter, opts.width)
   const logsByGo = buildLogsByGo(summary)
+  const colorOf = opts.stateColor ?? stateColor
   const rows: TimelineRow[] = []
   let y = opts.topOffset ?? 0
   for (const group of groups) {
@@ -123,7 +126,7 @@ export function layoutTimelineRows(
       if (collapsed) continue
     }
     for (const g of group.members) {
-      const lane = buildLane(g, scale, regionRowH, opts.laneHeight, logsByGo, y)
+      const lane = buildLane(g, scale, regionRowH, opts.laneHeight, logsByGo, y, colorOf)
       rows.push({ kind: 'lane', ...lane })
       y += lane.totalHeight + opts.laneGap
     }
