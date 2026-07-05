@@ -11,31 +11,26 @@ export function effectiveEnd(g: { endedAt: number }, traceEnd: number): number {
 
 export type IntervalState = 'running' | 'runnable' | 'blocked'
 
-const STATE_COLORS: Record<IntervalState, string> = {
-  running: '#4caf50',
-  runnable: '#9aa3b2',
-  blocked: '#c25450',
-}
+import type { EdgeCategory } from './types'
+import { makePalette } from './palette'
+
+// Default palette (dark theme, standard colors). Theme-aware rendering paths
+// get a live palette from stores/prefs.ts instead; these exports remain as the
+// single fallback so pure layout code and tests need no theme plumbing.
+const DEFAULT_PALETTE = makePalette('dark', false)
 
 // stateColor returns a fill for a known state, or a neutral gray for anything
 // unexpected (defensive against future trace states).
 export function stateColor(state: IntervalState): string {
-  return STATE_COLORS[state] ?? '#5b6270'
+  return DEFAULT_PALETTE.state[state] ?? '#5b6270'
 }
 
-// Shared graph colors (kept here so the graph renderer and the legend can't drift).
-export const DIM_COLOR = '#2a2e38' // node not alive at the current time / inactive edge
-export const EDGE_ACTIVE_COLOR = '#5b8def' // edge firing near the playhead
-
-import type { EdgeCategory } from './types'
+export const DIM_COLOR = DEFAULT_PALETTE.dim // node not alive / inactive edge
+export const EDGE_ACTIVE_COLOR = DEFAULT_PALETTE.category.channel // edge firing near the playhead
 
 // Per-category edge/comet colors. These encode the inferred synchronization
 // kind, NOT a transferred value (the trace has no channel identity).
-export const CATEGORY_COLORS: Record<EdgeCategory, string> = {
-  channel: '#5b8def',
-  mutex: '#e0a030',
-  other: '#a78bdb',
-}
+export const CATEGORY_COLORS: Record<EdgeCategory, string> = DEFAULT_PALETTE.category
 
 export function categoryColor(category: EdgeCategory): string {
   return CATEGORY_COLORS[category] ?? CATEGORY_COLORS.channel
