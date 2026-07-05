@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/kenshin579/trace-go/internal/model"
 )
 
 // writeSampleTrace runs an unbuffered send/recv rendezvous under the tracer and
@@ -71,5 +73,40 @@ func TestOpenTraceNotATraceErrors(t *testing.T) {
 	// Partial match: the not-a-trace message is long and embeds a shell example.
 	if !strings.Contains(err.Error(), "isn't a Go execution trace") {
 		t.Fatalf("unfriendly not-a-trace error: %q", err.Error())
+	}
+}
+
+func TestLoadSampleTraceInvariants(t *testing.T) {
+	app := NewApp()
+	sum, err := app.LoadSampleTrace()
+	if err != nil {
+		t.Fatalf("LoadSampleTrace: %v", err)
+	}
+	if len(sum.Goroutines) < 5 {
+		t.Fatalf("sample too small: %d goroutines", len(sum.Goroutines))
+	}
+	if sum.EndTime <= sum.StartTime {
+		t.Fatalf("bad time range: %d..%d", sum.StartTime, sum.EndTime)
+	}
+	hasChannelEdge := false
+	for _, e := range sum.Edges {
+		if e.Category == model.CategoryChannel {
+			hasChannelEdge = true
+			break
+		}
+	}
+	if !hasChannelEdge {
+		t.Fatal("expected at least one channel causal edge in the sample")
+	}
+	hasMutexBlock := false
+	for _, g := range sum.Goroutines {
+		for _, iv := range g.Intervals {
+			if iv.State == model.StateBlocked && strings.Contains(iv.BlockReason, "sync") {
+				hasMutexBlock = true
+			}
+		}
+	}
+	if !hasMutexBlock {
+		t.Fatal("expected at least one sync-blocked interval in the sample")
 	}
 }

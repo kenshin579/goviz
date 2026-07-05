@@ -9,3 +9,7 @@ export function OpenTrace(arg1) {
 export function OpenTraceDialog() {
   return window['go']['main']['App']['OpenTraceDialog']();
 }
+
+export function LoadSampleTrace() {
+  return window['go']['main']['App']['LoadSampleTrace']();
+}

@@ -5,3 +5,5 @@ import {model} from '../models';
 export function OpenTrace(arg1:string):Promise<model.TraceSummary>;
 
 export function OpenTraceDialog():Promise<model.TraceSummary>;
+
+export function LoadSampleTrace():Promise<model.TraceSummary>;
