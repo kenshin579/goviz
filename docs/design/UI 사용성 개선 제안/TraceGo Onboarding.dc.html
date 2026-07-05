@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+html,body{margin:0;padding:0;background:#0f1117}
+*{box-sizing:border-box}
+:root{--bg:#0f1117;--panel:#161922;--panel2:#12151d;--border:#2a2e38;--text:#cdd3df;--strong:#e6ebf2;--muted:#8a93a3;--faint:#5b6270;--accent:#5b8def;--dim:#2a2e38;--chipbg:#101a2e;--chipbd:rgba(91,141,239,0.45);--bannerbg:#14203a;--bannerbd:#2b4270;--btn2:#2a2e38;--shade:rgba(5,7,12,0.58)}
+[data-theme="light"]{--bg:#f5f6f8;--panel:#ffffff;--panel2:#eceef2;--border:#d7dae1;--text:#333a4a;--strong:#12161f;--muted:#5f6675;--faint:#9aa1ad;--accent:#3e6fd9;--dim:#d4d8e0;--chipbg:#eaf0fc;--chipbd:rgba(62,111,217,0.5);--bannerbg:#e3ecfc;--bannerbd:#b9cdf2;--btn2:#dde1e8;--shade:rgba(30,38,56,0.4)}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="height:100vh;display:flex;flex-direction:column;font-family:system-ui,sans-serif;color:var(--text);background:var(--bg);overflow:hidden">
+
+  <!-- ============ HEADER ============ -->
+  <div data-tour="header" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);flex:none">
+    <button onClick="{{ onOpen }}" style="background:var(--accent);color:#ffffff;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px">{{ tOpenBtn }}</button>
+    <sc-if value="{{ loaded }}" hint-placeholder-val="{{ false }}">
+      <span style="font-size:13px;color:var(--muted)">{{ infoText }}</span>
+      <div style="display:flex;align-items:center;gap:14px">
+        <button onClick="{{ onPlay }}" title="Play/Pause (Space)" style="background:var(--btn2);color:var(--text);border:0;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:13px">{{ playIcon }}</button>
+        <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px">{{ tSpeed }}
+          <select onChange="{{ onSpeed }}" value="{{ speed }}" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:12px">
+            <option value="0.25">0.25×</option>
+            <option value="0.5">0.5×</option>
+            <option value="1">1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+          </select>
+        </label>
+        <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" checked="{{ showSystem }}" onChange="{{ onSystem }}" />
+          {{ tSys }}
+        </label>
+      </div>
+    </sc-if>
+    <div data-settings style="margin-left:auto;position:relative;display:flex;gap:8px;align-items:center">
+      <button onClick="{{ onSettings }}" title="{{ tSettingsTip }}" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1">⚙</button>
+      <button onClick="{{ onHelp }}" title="{{ tHelpTip }}" style="background:transparent;color:var(--muted);border:1px solid var(--border);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1">?</button>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS POPUP ============ -->
+  <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ onCloseSettings }}" style="position:fixed;inset:0;z-index:100;background:var(--shade);display:flex;align-items:center;justify-content:center">
+      <div data-settings onClick="{{ onStopClick }}" style="width:320px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,0.45)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:14px;font-weight:600;color:var(--strong)">{{ tSettingsTip }}</span>
+          <button onClick="{{ onCloseSettings }}" title="Close" style="margin-left:auto;background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:0 2px">×</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--muted)">{{ tLang }}</span>
+          <div style="display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ langOpts }}" as="o" hint-placeholder-count="2">
+              <button onClick="{{ o.onClick }}" style="border:0;padding:5px 12px;font-size:12.5px;cursor:pointer;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--muted)">{{ tTheme }}</span>
+          <div style="display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ themeOpts }}" as="o" hint-placeholder-count="2">
+              <button onClick="{{ o.onClick }}" style="border:0;padding:5px 12px;font-size:12.5px;cursor:pointer;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--muted)">{{ tGuide }}</span>
+          <div style="display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ guideOpts }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.onClick }}" style="border:0;padding:5px 10px;font-size:12.5px;cursor:pointer;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <sc-for list="{{ toggleRows }}" as="tr" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--border)">
+            <span style="font-size:13px;color:var(--muted)">{{ tr.label }}</span>
+            <input type="checkbox" checked="{{ tr.checked }}" onChange="{{ tr.onChange }}" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer" />
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ FIRST-RUN CALLOUT BANNER ============ -->
+  <sc-if value="{{ calloutsOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 14px;background:var(--bannerbg);border-bottom:1px solid var(--bannerbd);font-size:12.5px;flex:none">
+      <span style="color:var(--accent);font-weight:600">{{ tFirstTime }}</span>
+      <span style="color:var(--muted)">{{ tBannerDesc }}</span>
+      <button onClick="{{ onGotIt }}" style="margin-left:auto;background:var(--accent);border:0;color:#ffffff;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:12px">{{ tGotIt }}</button>
+    </div>
+  </sc-if>
+
+  <!-- ============ EMPTY STATE ============ -->
+  <sc-if value="{{ empty }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ emptyRich }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto">
+        <div style="max-width:660px;display:flex;flex-direction:column;gap:22px;text-align:left">
+          <div>
+            <div style="font-size:22px;font-weight:600;color:var(--strong)">{{ tEmptyTitle }}</div>
+            <div style="font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55;text-wrap:pretty">{{ tEmptyDesc }}</div>
+          </div>
+          <div style="display:flex;gap:14px">
+            <div style="flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px">
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="flex:none;width:52px;font-size:10px;color:var(--muted)">main</span>
+                  <div style="flex:1;display:flex;height:10px;border-radius:2px;overflow:hidden">
+                    <div style="width:12%;background:{{ swRun }}"></div><div style="width:55%;background:{{ swBlk }}"></div><div style="width:33%;background:{{ swRun }}"></div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="flex:none;width:52px;font-size:10px;color:var(--muted)">producer</span>
+                  <div style="flex:1;display:flex;height:10px;border-radius:2px;overflow:hidden">
+                    <div style="width:10%;background:{{ swRunnable }}"></div><div style="width:42%;background:{{ swRun }}"></div><div style="width:18%;background:{{ swBlk }}"></div><div style="width:30%;background:{{ swRun }}"></div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span style="flex:none;width:52px;font-size:10px;color:var(--muted)">worker-1</span>
+                  <div style="flex:1;display:flex;height:10px;border-radius:2px;overflow:hidden">
+                    <div style="width:18%;background:{{ swRunnable }}"></div><div style="width:26%;background:{{ swBlk }}"></div><div style="width:56%;background:{{ swRun }}"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--text)">{{ tCard1Title }}</div>
+              <div style="margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.5">{{ tCard1Desc }}</div>
+            </div>
+            <div style="flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px">
+              <svg viewBox="0 0 220 96" style="width:100%;height:96px;display:block">
+                <line x1="60" y1="30" x2="130" y2="55" style="stroke:#5b8def;stroke-width:2"></line>
+                <line x1="130" y1="55" x2="180" y2="26" style="stroke:var(--dim);stroke-width:1.5"></line>
+                <line x1="130" y1="55" x2="95" y2="75" style="stroke:#e0a030;stroke-width:2"></line>
+                <circle cx="60" cy="30" r="8" style="fill:{{ swRun }}"></circle>
+                <circle cx="130" cy="55" r="8" style="fill:{{ swBlk }}"></circle>
+                <circle cx="180" cy="26" r="8" style="fill:{{ swRunnable }}"></circle>
+                <circle cx="95" cy="75" r="8" style="fill:var(--dim)"></circle>
+              </svg>
+              <div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--text)">{{ tCard2Title }}</div>
+              <div style="margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.5">{{ tCard2Desc }}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button onClick="{{ onSample }}" style="background:var(--accent);color:#ffffff;border:0;padding:9px 18px;border-radius:6px;cursor:pointer;font-size:13.5px;font-weight:600">{{ tSampleBtn }}</button>
+            <button onClick="{{ onOpen }}" style="background:transparent;color:var(--text);border:1px solid var(--border);padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13.5px">{{ tOpenBtn2 }}</button>
+          </div>
+          <div style="font-size:12px;color:var(--faint)">{{ tNoTracePre }} <code style="background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:11px">go test -trace trace.out ./...</code> {{ tNoTracePost }}</div>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ emptyMinimal }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px">
+        <div style="color:var(--muted);font-size:14px">{{ tMinimalLine }}</div>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ onSample }}" style="background:var(--accent);color:#ffffff;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">{{ tSampleBtn }}</button>
+          <button onClick="{{ onOpen }}" style="background:transparent;color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px">{{ tOpenBtn }}</button>
+        </div>
+        <div style="font-size:12px;color:var(--faint)">{{ tNoTracePre }} <code style="background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:11px">go test -trace trace.out ./...</code> {{ tNoTracePost }}</div>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <!-- ============ LOADED: TIMELINE ============ -->
+  <sc-if value="{{ loaded }}" hint-placeholder-val="{{ false }}">
+    <div data-tour="timeline" onPointerDown="{{ onScrubDown }}" onPointerMove="{{ onScrubMove }}" style="flex:0 0 42%;overflow:auto;border-bottom:1px solid var(--border);position:relative;cursor:ew-resize">
+      <sc-if value="{{ inlineHints }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:4px 14px;background:var(--panel2);border-bottom:1px solid var(--border);font-size:10.5px;letter-spacing:0.6px;color:var(--muted);position:sticky;top:0;z-index:5"><b style="color:var(--text);font-weight:600">{{ tTlStripTitle }}</b> &nbsp;·&nbsp; {{ tTlStripDesc }}</div>
+      </sc-if>
+      <div style="position:relative;padding:8px 0 4px">
+        <sc-for list="{{ lanes }}" as="lane" hint-placeholder-count="6">
+          <div style="display:flex;align-items:stretch;height:18px;margin-bottom:3px;opacity:{{ lane.alpha }}">
+            <div style="flex:0 0 120px;font-size:11px;display:flex;align-items:center;padding-left:6px;white-space:nowrap;overflow:hidden;color:{{ lane.labelColor }}">{{ lane.label }}</div>
+            <div style="flex:1;position:relative">
+              <sc-for list="{{ lane.segs }}" as="seg" hint-placeholder-count="3">
+                <div title="{{ seg.title }}" style="position:absolute;top:0;height:100%;left:{{ seg.left }};width:{{ seg.width }};background:{{ seg.color }}"></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div style="position:absolute;top:0;bottom:0;left:120px;right:0;pointer-events:none">
+          <div style="position:absolute;top:0;bottom:0;width:2px;background:var(--accent);left:{{ playheadPct }}"></div>
+        </div>
+      </div>
+      <sc-if value="{{ calloutsOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:10px;right:14px;z-index:20;display:flex;gap:8px;align-items:flex-start;max-width:290px;background:var(--chipbg);border:1px solid var(--chipbd);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,0.35)">
+          <span style="flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#ffffff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">1</span>
+          <span style="line-height:1.45;color:var(--muted)"><b style="color:var(--text)">{{ tChip1Title }}</b> {{ tChip1Body }}</span>
+        </div>
+        <div style="position:absolute;bottom:10px;left:130px;z-index:20;display:flex;gap:8px;align-items:flex-start;max-width:270px;background:var(--chipbg);border:1px solid var(--chipbd);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,0.35)">
+          <span style="flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#ffffff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">2</span>
+          <span style="line-height:1.45;color:var(--muted)"><b style="color:var(--text)">{{ tChip2Title }}</b> {{ tChip2Body }}</span>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- ============ LOADED: GRAPH ============ -->
+    <div data-tour="graph" style="flex:1;min-height:0;position:relative;display:flex;flex-direction:column">
+      <sc-if value="{{ inlineHints }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:4px 14px;background:var(--panel2);border-bottom:1px solid var(--border);font-size:10.5px;letter-spacing:0.6px;color:var(--muted)"><b style="color:var(--text);font-weight:600">{{ tGrStripTitle }}</b> &nbsp;·&nbsp; {{ tGrStripDesc }}</div>
+      </sc-if>
+      <svg viewBox="0 0 600 360" preserveAspectRatio="xMidYMid meet" style="width:100%;flex:1;min-height:0;display:block">
+        <sc-for list="{{ gEdges }}" as="e" hint-placeholder-count="4">
+          <line x1="{{ e.x1 }}" y1="{{ e.y1 }}" x2="{{ e.x2 }}" y2="{{ e.y2 }}" style="stroke:{{ e.color }};stroke-width:{{ e.w }};opacity:{{ e.o }}">
+            <title>{{ e.tip }}</title>
+          </line>
+        </sc-for>
+        <sc-for list="{{ gNodes }}" as="n" hint-placeholder-count="6">
+          <g onClick="{{ n.onClick }}" style="cursor:pointer;opacity:{{ n.o }}">
+            <circle cx="{{ n.x }}" cy="{{ n.y }}" r="9" style="fill:{{ n.color }};stroke:{{ n.stroke }};stroke-width:2">
+              <title>{{ n.tip }}</title>
+            </circle>
+            <text x="{{ n.tx }}" y="{{ n.y }}" style="fill:var(--muted);font-size:10px;dominant-baseline:middle">{{ n.tag }}</text>
+          </g>
+        </sc-for>
+      </svg>
+      <sc-if value="{{ calloutsOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:12px;left:14px;z-index:20;display:flex;gap:8px;align-items:flex-start;max-width:300px;background:var(--chipbg);border:1px solid var(--chipbd);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,0.35)">
+          <span style="flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#ffffff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">3</span>
+          <span style="line-height:1.45;color:var(--muted)"><b style="color:var(--text)">{{ tChip3Title }}</b> {{ tChip3Body }}</span>
+        </div>
+        <div style="position:absolute;bottom:12px;right:14px;z-index:20;display:flex;gap:8px;align-items:flex-start;max-width:280px;background:var(--chipbg);border:1px solid var(--chipbd);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,0.35)">
+          <span style="flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#ffffff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">4</span>
+          <span style="line-height:1.45;color:var(--muted)"><b style="color:var(--text)">{{ tChip4Title }}</b> {{ tChip4Body }}</span>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- ============ LEGEND ============ -->
+    <div data-tour="legend" style="display:flex;flex-wrap:wrap;gap:14px;padding:6px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);flex:none;align-items:center">
+      <sc-if value="{{ inlineHints }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:10px;letter-spacing:0.6px;color:var(--faint);font-weight:600">{{ tLegStateGroup }}</span>
+      </sc-if>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:{{ swRun }}"></span>{{ tLegRunning }}</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:{{ swRunnable }}"></span>{{ tLegRunnable }}</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:{{ swBlk }}"></span>{{ tLegBlocked }}</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--dim)"></span>{{ tLegNotAlive }}</span>
+      <sc-if value="{{ inlineHints }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:10px;letter-spacing:0.6px;color:var(--faint);font-weight:600;margin-left:8px">{{ tLegEdgeGroup }}</span>
+      </sc-if>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px solid #5b8def"></span>{{ tLegChannel }}</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px solid #e0a030"></span>{{ tLegMutex }}</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px solid #a78bdb"></span>{{ tLegOther }}</span>
+      <sc-if value="{{ inlineHints }}" hint-placeholder-val="{{ false }}">
+        <span style="margin-left:auto;color:var(--faint)">{{ tLegFocusHint }}</span>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ============ COACHMARK TOUR ============ -->
+  <sc-if value="{{ tourOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;z-index:90;border:1.5px solid var(--accent);border-radius:8px;box-shadow:0 0 0 9999px var(--shade);pointer-events:none;transition:all 0.25s ease;left:{{ spotX }};top:{{ spotY }};width:{{ spotW }};height:{{ spotH }}"></div>
+    <div style="position:fixed;z-index:95;width:330px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:0 12px 40px rgba(0,0,0,0.5);transition:all 0.25s ease;left:{{ popX }};top:{{ popY }}">
+      <div style="font-size:10.5px;color:var(--accent);font-weight:700;letter-spacing:0.8px">{{ tourStepLabel }}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--strong);margin-top:4px">{{ tourTitle }}</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:6px;text-wrap:pretty">{{ tourBody }}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+        <button onClick="{{ onTourSkip }}" style="background:transparent;border:0;color:var(--faint);cursor:pointer;font-size:12px;padding:4px 0">{{ tSkip }}</button>
+        <button onClick="{{ onTourBack }}" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;opacity:{{ backOpacity }}">{{ tBack }}</button>
+        <button onClick="{{ onTourNext }}" style="background:var(--accent);border:0;color:#ffffff;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:12px;font-weight:600">{{ tourNextLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;guideVariant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tour&quot;,&quot;callouts&quot;,&quot;inline&quot;],&quot;default&quot;:&quot;tour&quot;,&quot;tsType&quot;:&quot;'tour'|'callouts'|'inline'&quot;,&quot;section&quot;:&quot;Onboarding&quot;},&quot;autoShowGuide&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Onboarding&quot;},&quot;emptyVariant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;rich&quot;,&quot;minimal&quot;],&quot;default&quot;:&quot;rich&quot;,&quot;tsType&quot;:&quot;'rich'|'minimal'&quot;,&quot;section&quot;:&quot;Empty state&quot;},&quot;language&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;en&quot;,&quot;ko&quot;],&quot;default&quot;:&quot;en&quot;,&quot;tsType&quot;:&quot;'en'|'ko'&quot;,&quot;section&quot;:&quot;Settings defaults&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;'dark'|'light'&quot;,&quot;section&quot;:&quot;Settings defaults&quot;}}">
+class Component extends DCLogic {
+  state = {
+    loaded: false, playing: false, speed: 1, playhead: 0,
+    showSystem: (typeof localStorage !== 'undefined' && localStorage.getItem('tracego.sys')) === 'true', selectedId: null,
+    tourStep: 0, calloutsOpen: false, spot: null, pop: null,
+    settingsOpen: false,
+    lang: (typeof localStorage !== 'undefined' && localStorage.getItem('tracego.lang')) || null,
+    theme: (typeof localStorage !== 'undefined' && localStorage.getItem('tracego.theme')) || null,
+    guideVar: (typeof localStorage !== 'undefined' && localStorage.getItem('tracego.guide')) || null,
+    loop: (typeof localStorage !== 'undefined' && localStorage.getItem('tracego.loop')) === 'true',
+    cb: (typeof localStorage !== 'undefined' && localStorage.getItem('tracego.cb')) === 'true',
+    nodeLabels: (() => { try { const v = localStorage.getItem('tracego.labels'); return v === null ? null : v === 'true' } catch (e) { return null } })()
+  }
+  dragging = false
+  raf = 0
+  last = 0
+
+  goroutines = [
+    { id: 1, name: 'main', sys: false, iv: [[0,6,'running'],[6,64,'blocked','chan receive'],[64,72,'running'],[72,92,'blocked','sync.WaitGroup.Wait'],[92,100,'running']] },
+    { id: 18, name: 'producer', sys: false, iv: [[4,10,'runnable'],[10,26,'running'],[26,34,'blocked','chan send'],[34,52,'running'],[52,58,'blocked','chan send'],[58,62,'running']] },
+    { id: 19, name: 'consumer', sys: false, iv: [[4,12,'blocked','chan receive'],[12,30,'running'],[30,42,'blocked','chan receive'],[42,64,'running']] },
+    { id: 21, name: 'worker-1', sys: false, iv: [[8,14,'runnable'],[14,30,'running'],[30,40,'blocked','sync.Mutex.Lock'],[40,56,'running'],[56,66,'blocked','chan receive'],[66,88,'running']] },
+    { id: 22, name: 'worker-2', sys: false, iv: [[8,16,'runnable'],[16,30,'blocked','sync.Mutex.Lock'],[30,44,'running'],[44,68,'blocked','chan receive'],[68,90,'running']] },
+    { id: 23, name: 'worker-3', sys: false, iv: [[8,20,'runnable'],[20,36,'blocked','sync.Mutex.Lock'],[36,52,'running'],[52,70,'blocked','chan receive'],[70,92,'running']] },
+    { id: 2, name: 'runtime.bgsweep', sys: true, iv: [[0,100,'blocked','forever']] },
+    { id: 4, name: 'runtime.gcBgMarkWorker', sys: true, iv: [[0,100,'blocked','GC mark']] }
+  ]
+  edges = [
+    { from: 18, to: 19, t: 12, cat: 'channel' },
+    { from: 19, to: 18, t: 34, cat: 'channel' },
+    { from: 21, to: 22, t: 30, cat: 'mutex' },
+    { from: 22, to: 23, t: 36, cat: 'mutex' },
+    { from: 19, to: 18, t: 58, cat: 'channel' },
+    { from: 19, to: 1, t: 64, cat: 'channel' },
+    { from: 1, to: 21, t: 66, cat: 'channel' },
+    { from: 1, to: 22, t: 68, cat: 'channel' },
+    { from: 1, to: 23, t: 70, cat: 'channel' },
+    { from: 23, to: 1, t: 92, cat: 'other' }
+  ]
+  pos = { 1: [300, 80], 18: [150, 190], 19: [280, 240], 21: [430, 160], 22: [470, 260], 23: [360, 310], 2: [90, 80], 4: [510, 70] }
+  tourSels = ['[data-tour="timeline"]', '[data-tour="header"]', '[data-tour="graph"]', '[data-tour="legend"]']
+
+  copy = {
+    en: {
+      openBtn: 'Open trace\u2026', openBtn2: 'Open trace\u2026 (.out)', speed: 'Speed', sys: 'Show system goroutines',
+      helpTip: 'How to read this view', settingsTip: 'Settings', lang: 'Language', theme: 'Theme', dark: 'Dark', light: 'Light',
+      guide: 'Guide style', guideTour: 'Tour', guideCall: 'Callouts', guideHints: 'Hints', loopL: 'Loop playback', labelsL: 'Always show node names', cbL: 'Colorblind-friendly colors',
+      cwStd: { run: 'green', blk: 'red' }, cwCb: { run: 'blue', blk: 'orange' },
+      info: (g, e) => g + ' goroutines \u00b7 ' + e + ' edges \u00b7 100.0 ms',
+      emptyTitle: "See your Go program's concurrency",
+      emptyDesc: 'trace-go replays a standard Go execution trace: every goroutine gets a timeline lane on top, and a live graph below shows who unblocked whom \u2014 both driven by one shared playhead.',
+      card1Title: '\u2460 Timeline', card1Desc: 'One lane per goroutine \u2014 {run} running, gray runnable, {blk} blocked. Hover a bar to see why it blocked.',
+      card2Title: '\u2461 Live graph', card2Desc: 'Circles are goroutines at the playhead; a line lights up when one unblocks another \u2014 blue channel, orange mutex.',
+      sampleBtn: '\u25b6\u00a0 Explore a sample trace',
+      noTracePre: 'No trace yet? Create one with', noTracePost: 'and open it here.',
+      minimalLine: 'Open a Go execution trace (.out) to begin \u2014 or try the built-in sample.',
+      firstTime: 'First time?', bannerDesc: 'The numbered notes below explain each area. You can hover anything for details, any time.', gotIt: 'Got it \u2014 play the trace',
+      chip1T: 'Timeline.', chip1B: 'One lane per goroutine: {run} running, gray runnable, {blk} blocked. Hover a bar for the block reason.',
+      chip2T: 'Playhead.', chip2B: 'Press \u25b6 or Space to replay; drag here to scrub. The blue line drives both views.',
+      chip3T: 'Live graph.', chip3B: 'Each circle is a goroutine, colored by its state right now. An edge lights up when one goroutine unblocks another (inferred).',
+      chip4T: 'Focus.', chip4B: 'Click any circle to highlight its causal chain in both views; click again to clear. Colors are explained in the legend below.',
+      tlStripT: 'TIMELINE', tlStripD: 'one lane per goroutine \u00b7 hover a bar to see why it blocked \u00b7 drag to scrub',
+      grStripT: 'LIVE GRAPH', grStripD: 'circles = goroutines at the playhead \u00b7 edges light up when one wakes another \u00b7 click a circle to focus its chain',
+      legStateGroup: 'GOROUTINE STATE', legEdgeGroup: 'WAKE-UP EDGES',
+      states: { running: 'running', runnable: 'runnable', blocked: 'blocked' }, notAlive: 'not alive',
+      cats: { channel: 'channel', mutex: 'mutex', other: 'other' }, inferred: 'inferred',
+      legFocusHint: 'click a goroutine to focus its causal chain',
+      stepLabel: 'STEP {n} OF 4', skip: 'Skip', back: 'Back', next: 'Next', done: 'Done \u2014 play',
+      tour: [
+        { title: 'Timeline \u2014 one lane per goroutine', body: 'Each row is one goroutine over time: {run} means running, gray runnable (waiting for a CPU), {blk} blocked. Hover any bar to see why it blocked \u2014 e.g. \u201cchan receive\u201d.' },
+        { title: 'Playback', body: 'Press \u25b6 (or Space) to replay the trace, and pick a speed. You can also drag anywhere on the timeline to scrub the blue playhead.' },
+        { title: 'Live graph', body: 'Every circle is a goroutine, colored by its state at the playhead. A line lights up when one goroutine unblocks another \u2014 blue for channels, orange for mutexes. Edges are inferred from the trace.' },
+        { title: 'Legend & focus', body: 'Colors are always explained down here. Click any circle in the graph to focus its causal chain across both views; click it again to clear.' }
+      ]
+    },
+    ko: {
+      openBtn: '\ud2b8\ub808\uc774\uc2a4 \uc5f4\uae30\u2026', openBtn2: '\ud2b8\ub808\uc774\uc2a4 \uc5f4\uae30\u2026 (.out)', speed: '\uc18d\ub3c4', sys: '\uc2dc\uc2a4\ud15c \uace0\ub8e8\ud2f4 \ud45c\uc2dc',
+      helpTip: '\uc774 \ud654\uba74 \uc77d\ub294 \ubc95', settingsTip: '\uc124\uc815', lang: '\uc5b8\uc5b4', theme: '\ud14c\ub9c8', dark: '\ub2e4\ud06c', light: '\ub77c\uc774\ud2b8',
+      guide: '\uc548\ub0b4 \ubc29\uc2dd', guideTour: '\ud22c\uc5b4', guideCall: '\ucf5c\uc544\uc6c3', guideHints: '\ud78c\ud2b8', loopL: '\ubc18\ubcf5 \uc7ac\uc0dd', labelsL: '\ub178\ub4dc \uc774\ub984 \ud56d\uc0c1 \ud45c\uc2dc', cbL: '\uc0c9\uc57d \uce5c\ud654 \uc0c9\uc0c1',
+      cwStd: { run: '\ucd08\ub85d', blk: '\ube68\uac15' }, cwCb: { run: '\ud30c\ub791', blk: '\uc8fc\ud669' },
+      info: (g, e) => '\uace0\ub8e8\ud2f4 ' + g + ' \u00b7 \uc5e3\uc9c0 ' + e + ' \u00b7 100.0 ms',
+      emptyTitle: 'Go \ud504\ub85c\uadf8\ub7a8\uc758 \ub3d9\uc2dc\uc131\uc744 \ub208\uc73c\ub85c \ud655\uc778\ud558\uc138\uc694',
+      emptyDesc: 'trace-go\ub294 \ud45c\uc900 Go \uc2e4\ud589 \ud2b8\ub808\uc774\uc2a4\ub97c \uc7ac\uc0dd\ud569\ub2c8\ub2e4. \uc704\ucabd \ud0c0\uc784\ub77c\uc778\uc5d0\ub294 \uace0\ub8e8\ud2f4\ubcc4 \ub808\uc778\uc774, \uc544\ub798\ucabd \ub77c\uc774\ube0c \uadf8\ub798\ud504\uc5d0\ub294 \ub204\uac00 \ub204\uad6c\ub97c \uae68\uc6e0\ub294\uc9c0\uac00 \ud45c\uc2dc\ub418\uba70, \ub450 \ubdf0\ub294 \ud558\ub098\uc758 \ud50c\ub808\uc774\ud5e4\ub4dc\ub85c \ud568\uaed8 \uc6c0\uc9c1\uc785\ub2c8\ub2e4.',
+      card1Title: '\u2460 \ud0c0\uc784\ub77c\uc778', card1Desc: '\uace0\ub8e8\ud2f4\ub9c8\ub2e4 \ud55c \uc904 \u2014 {run}\uc740 \uc2e4\ud589 \uc911, \ud68c\uc0c9\uc740 \uc2e4\ud589 \ub300\uae30, {blk}\uc740 \ucc28\ub2e8\ub428. \ub9c9\ub300\uc5d0 \ub9c8\uc6b0\uc2a4\ub97c \uc62c\ub9ac\uba74 \ucc28\ub2e8 \uc774\uc720\uac00 \ubcf4\uc785\ub2c8\ub2e4.',
+      card2Title: '\u2461 \ub77c\uc774\ube0c \uadf8\ub798\ud504', card2Desc: '\uc6d0\uc740 \ud50c\ub808\uc774\ud5e4\ub4dc \uc2dc\uc810\uc758 \uace0\ub8e8\ud2f4\uc774\uba70, \ud55c \uace0\ub8e8\ud2f4\uc774 \ub2e4\ub978 \uace0\ub8e8\ud2f4\uc744 \uae68\uc6b0\uba74 \uc120\uc774 \ucf1c\uc9d1\ub2c8\ub2e4 \u2014 \ud30c\ub791\uc740 \ucc44\ub110, \uc8fc\ud669\uc740 \ubba4\ud14d\uc2a4.',
+      sampleBtn: '\u25b6\u00a0 \uc0d8\ud50c \ud2b8\ub808\uc774\uc2a4 \uc0b4\ud3b4\ubcf4\uae30',
+      noTracePre: '\uc544\uc9c1 \ud2b8\ub808\uc774\uc2a4\uac00 \uc5c6\ub098\uc694?', noTracePost: '\uba85\ub839\uc73c\ub85c \ub9cc\ub4e0 \ub4a4 \uc5ec\uae30\uc11c \uc5f4\uc5b4\ubcf4\uc138\uc694.',
+      minimalLine: 'Go \uc2e4\ud589 \ud2b8\ub808\uc774\uc2a4(.out)\ub97c \uc5f4\uc5b4 \uc2dc\uc791\ud558\uc138\uc694 \u2014 \ub0b4\uc7a5 \uc0d8\ud50c\ub3c4 \uc788\uc5b4\uc694.',
+      firstTime: '\ucc98\uc74c\uc774\uc2e0\uac00\uc694?', bannerDesc: '\ubc88\ud638\uac00 \ubd99\uc740 \uba54\ubaa8\uac00 \uac01 \uc601\uc5ed\uc744 \uc124\uba85\ud569\ub2c8\ub2e4. \uc5b8\uc81c\ub4e0 \uc694\uc18c\uc5d0 \ub9c8\uc6b0\uc2a4\ub97c \uc62c\ub824 \uc790\uc138\ud788 \ubcfc \uc218 \uc788\uc5b4\uc694.', gotIt: '\ud655\uc778\ud588\uc5b4\uc694 \u2014 \uc7ac\uc0dd \uc2dc\uc791',
+      chip1T: '\ud0c0\uc784\ub77c\uc778.', chip1B: '\uace0\ub8e8\ud2f4\ub9c8\ub2e4 \ud55c \uc904: {run} \uc2e4\ud589 \uc911, \ud68c\uc0c9 \uc2e4\ud589 \ub300\uae30, {blk} \ucc28\ub2e8\ub428. \ub9c9\ub300\uc5d0 \ud638\ubc84\ud558\uba74 \ucc28\ub2e8 \uc774\uc720\uac00 \ubcf4\uc785\ub2c8\ub2e4.',
+      chip2T: '\ud50c\ub808\uc774\ud5e4\ub4dc.', chip2B: '\u25b6 \ub610\ub294 Space\ub85c \uc7ac\uc0dd\ud558\uace0, \uc5ec\uae30\ub97c \ub4dc\ub798\uadf8\ud574 \ud0d0\uc0c9\ud558\uc138\uc694. \ud30c\ub780 \uc120\uc774 \ub450 \ubdf0\ub97c \ud568\uaed8 \uc6c0\uc9c1\uc785\ub2c8\ub2e4.',
+      chip3T: '\ub77c\uc774\ube0c \uadf8\ub798\ud504.', chip3B: '\uac01 \uc6d0\uc740 \uace0\ub8e8\ud2f4\uc774\uba70 \ud604\uc7ac \uc0c1\ud0dc \uc0c9\uc73c\ub85c \uce60\ud574\uc9d1\ub2c8\ub2e4. \ud55c \uace0\ub8e8\ud2f4\uc774 \ub2e4\ub978 \uace0\ub8e8\ud2f4\uc744 \uae68\uc6b0\uba74 \uc5e3\uc9c0\uac00 \ucf1c\uc9d1\ub2c8\ub2e4(\ucd94\uc815).',
+      chip4T: '\ud3ec\ucee4\uc2a4.', chip4B: '\uc6d0\uc744 \ud074\ub9ad\ud558\uba74 \uc778\uacfc \uccb4\uc778\uc774 \ub450 \ubdf0\uc5d0\uc11c \uac15\uc870\ub418\uace0, \ub2e4\uc2dc \ud074\ub9ad\ud558\uba74 \ud574\uc81c\ub429\ub2c8\ub2e4. \uc0c9 \uc758\ubbf8\ub294 \uc544\ub798 \ubc94\ub840\uc5d0 \uc788\uc5b4\uc694.',
+      tlStripT: '\ud0c0\uc784\ub77c\uc778', tlStripD: '\uace0\ub8e8\ud2f4\ub9c8\ub2e4 \ud55c \uc904 \u00b7 \ub9c9\ub300\uc5d0 \ud638\ubc84\ud558\uba74 \ucc28\ub2e8 \uc774\uc720 \u00b7 \ub4dc\ub798\uadf8\ub85c \ud0d0\uc0c9',
+      grStripT: '\ub77c\uc774\ube0c \uadf8\ub798\ud504', grStripD: '\uc6d0 = \ud50c\ub808\uc774\ud5e4\ub4dc \uc2dc\uc810\uc758 \uace0\ub8e8\ud2f4 \u00b7 \ud558\ub098\uac00 \ub2e4\ub978 \ud558\ub098\ub97c \uae68\uc6b0\uba74 \uc120\uc774 \ucf1c\uc9d0 \u00b7 \uc6d0\uc744 \ud074\ub9ad\ud558\uba74 \uccb4\uc778 \ud3ec\ucee4\uc2a4',
+      legStateGroup: '\uace0\ub8e8\ud2f4 \uc0c1\ud0dc', legEdgeGroup: '\uc6e8\uc774\ud06c\uc5c5 \uc5e3\uc9c0',
+      states: { running: '\uc2e4\ud589 \uc911', runnable: '\uc2e4\ud589 \ub300\uae30', blocked: '\ucc28\ub2e8\ub428' }, notAlive: '\uc885\ub8cc\u00b7\ubbf8\uc0dd\uc131',
+      cats: { channel: '\ucc44\ub110', mutex: '\ubba4\ud14d\uc2a4', other: '\uae30\ud0c0' }, inferred: '\ucd94\uc815',
+      legFocusHint: '\uace0\ub8e8\ud2f4\uc744 \ud074\ub9ad\ud558\uba74 \uc778\uacfc \uccb4\uc778\uc774 \uac15\uc870\ub429\ub2c8\ub2e4',
+      stepLabel: '\ub2e8\uacc4 {n} / 4', skip: '\uac74\ub108\ub6f0\uae30', back: '\uc774\uc804', next: '\ub2e4\uc74c', done: '\uc644\ub8cc \u2014 \uc7ac\uc0dd',
+      tour: [
+        { title: '\ud0c0\uc784\ub77c\uc778 \u2014 \uace0\ub8e8\ud2f4\ub9c8\ub2e4 \ud55c \uc904', body: '\uac01 \uc904\uc740 \uc2dc\uac04\uc5d0 \ub530\ub978 \uace0\ub8e8\ud2f4 \ud558\ub098\uc785\ub2c8\ub2e4. {run}\uc740 \uc2e4\ud589 \uc911, \ud68c\uc0c9\uc740 \uc2e4\ud589 \ub300\uae30(CPU \uae30\ub2e4\ub9bc), {blk}\uc740 \ucc28\ub2e8\ub428. \ub9c9\ub300\uc5d0 \ub9c8\uc6b0\uc2a4\ub97c \uc62c\ub9ac\uba74 \ucc28\ub2e8 \uc774\uc720(\uc608: \u201cchan receive\u201d)\uac00 \ubcf4\uc785\ub2c8\ub2e4.' },
+        { title: '\uc7ac\uc0dd', body: '\u25b6(\ub610\ub294 Space)\ub97c \ub20c\ub7ec \ud2b8\ub808\uc774\uc2a4\ub97c \uc7ac\uc0dd\ud558\uace0 \uc18d\ub3c4\ub97c \uace0\ub97c \uc218 \uc788\uc5b4\uc694. \ud0c0\uc784\ub77c\uc778 \uc544\ubb34 \uacf3\uc774\ub098 \ub4dc\ub798\uadf8\ud558\uba74 \ud30c\ub780 \ud50c\ub808\uc774\ud5e4\ub4dc\ub97c \uc62e\uae38 \uc218 \uc788\uc2b5\ub2c8\ub2e4.' },
+        { title: '\ub77c\uc774\ube0c \uadf8\ub798\ud504', body: '\ubaa8\ub4e0 \uc6d0\uc740 \uace0\ub8e8\ud2f4\uc774\uba70 \ud50c\ub808\uc774\ud5e4\ub4dc \uc2dc\uc810\uc758 \uc0c1\ud0dc \uc0c9\uc73c\ub85c \uce60\ud574\uc9d1\ub2c8\ub2e4. \ud55c \uace0\ub8e8\ud2f4\uc774 \ub2e4\ub978 \uace0\ub8e8\ud2f4\uc744 \uae68\uc6b0\uba74 \uc120\uc774 \ucf1c\uc9d1\ub2c8\ub2e4 \u2014 \ud30c\ub791\uc740 \ucc44\ub110, \uc8fc\ud669\uc740 \ubba4\ud14d\uc2a4. \uc5e3\uc9c0\ub294 \ud2b8\ub808\uc774\uc2a4\uc5d0\uc11c \ucd94\uc815\ub41c \uac83\uc785\ub2c8\ub2e4.' },
+        { title: '\ubc94\ub840\uc640 \ud3ec\ucee4\uc2a4', body: '\uc0c9\uc758 \uc758\ubbf8\ub294 \ud56d\uc0c1 \uc544\ub798 \ubc94\ub840\uc5d0 \uc788\uc2b5\ub2c8\ub2e4. \uadf8\ub798\ud504\uc758 \uc6d0\uc744 \ud074\ub9ad\ud558\uba74 \ub450 \ubdf0 \ubaa8\ub450\uc5d0\uc11c \uc778\uacfc \uccb4\uc778\uc774 \uac15\uc870\ub418\uace0, \ub2e4\uc2dc \ud074\ub9ad\ud558\uba74 \ud574\uc81c\ub429\ub2c8\ub2e4.' }
+      ]
+    }
+  }
+
+  componentDidMount() {
+    this.onKey = (e) => {
+      if (e.code !== 'Space' || !this.state.loaded) return
+      const tag = (e.target && e.target.tagName) || ''
+      if (tag === 'BUTTON' || tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA') return
+      e.preventDefault()
+      this.togglePlay()
+    }
+    window.addEventListener('keydown', this.onKey)
+    this.onResize = () => { if (this.state.tourStep > 0) this.goToStep(this.state.tourStep) }
+    window.addEventListener('resize', this.onResize)
+    this.onUp = () => { this.dragging = false }
+    window.addEventListener('pointerup', this.onUp)
+    this.onDocDown = (e) => {
+      if (this.state.settingsOpen && !(e.target.closest && e.target.closest('[data-settings]'))) {
+        this.setState({ settingsOpen: false })
+      }
+    }
+    window.addEventListener('pointerdown', this.onDocDown)
+  }
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onKey)
+    window.removeEventListener('resize', this.onResize)
+    window.removeEventListener('pointerup', this.onUp)
+    window.removeEventListener('pointerdown', this.onDocDown)
+    if (this.raf) cancelAnimationFrame(this.raf)
+  }
+
+  effLang() { return this.state.lang ?? this.props.language ?? 'en' }
+  effVariant() { return this.state.guideVar ?? this.props.guideVariant ?? 'tour' }
+  setPref(key, val) { try { localStorage.setItem(key, String(val)) } catch (e) {} }
+  setGuide(v) { this.setPref('tracego.guide', v); this.setState({ guideVar: v }) }
+  effTheme() { return this.state.theme ?? this.props.theme ?? 'dark' }
+
+  stateAt(g, t) {
+    for (const iv of g.iv) { if (t >= iv[0] && t < iv[1]) return iv[2] }
+    return null
+  }
+
+  play() {
+    if (this.state.playing || !this.state.loaded) return
+    let p = this.state.playhead
+    if (p >= 100) p = 0
+    this.setState({ playing: true, playhead: p })
+    this.last = 0
+    this.raf = requestAnimationFrame(this.tick)
+  }
+  pause() {
+    this.setState({ playing: false })
+    if (this.raf) cancelAnimationFrame(this.raf)
+    this.raf = 0
+  }
+  togglePlay() { this.state.playing ? this.pause() : this.play() }
+  tick = (now) => {
+    if (!this.state.playing) return
+    const dt = this.last ? now - this.last : 16
+    this.last = now
+    const p = this.state.playhead + dt * this.state.speed * (100 / 9000)
+    if (p >= 100) {
+      if (this.state.loop) { this.setState({ playhead: p - 100 }); this.raf = requestAnimationFrame(this.tick); return }
+      this.setState({ playhead: 100, playing: false }); this.raf = 0; return
+    }
+    this.setState({ playhead: p })
+    this.raf = requestAnimationFrame(this.tick)
+  }
+
+  loadSample() {
+    if (this.state.loaded) return
+    this.setState({ loaded: true, playhead: 0, selectedId: null })
+    const auto = this.props.autoShowGuide ?? true
+    const v = this.effVariant()
+    setTimeout(() => {
+      if (!auto) { this.play(); return }
+      if (v === 'tour') this.openTour()
+      else if (v === 'callouts') { this.setState({ calloutsOpen: true }); this.play() }
+      else this.play()
+    }, 350)
+  }
+
+  openTour() {
+    this.pause()
+    this.goToStep(1)
+  }
+  goToStep(step) {
+    const m = this.measure(step)
+    this.setState({ tourStep: step, calloutsOpen: false, spot: m ? m.spot : null, pop: m ? m.pop : null })
+  }
+  measure(step) {
+    const el = document.querySelector(this.tourSels[step - 1])
+    if (!el) return null
+    const r = el.getBoundingClientRect()
+    const vw = window.innerWidth, vh = window.innerHeight
+    const POP_H = 210
+    const spot = { x: r.left - 4, y: r.top - 4, w: r.width + 8, h: r.height + 8 }
+    const px = Math.min(Math.max(r.left + 24, 12), vw - 354)
+    let py = r.bottom + 14
+    if (py + POP_H > vh) {
+      py = r.top - POP_H - 14
+      if (py < 12) py = Math.min(Math.max(12, r.top + 14), vh - POP_H)
+    }
+    return { spot, pop: { x: px, y: py } }
+  }
+  tourNext() {
+    const s = this.state.tourStep
+    if (s >= 4) { this.setState({ tourStep: 0 }); this.play(); return }
+    this.goToStep(s + 1)
+  }
+  tourBack() {
+    const s = this.state.tourStep
+    if (s <= 1) return
+    this.goToStep(s - 1)
+  }
+
+  setLang(l) {
+    this.setState({ lang: l })
+    try { localStorage.setItem('tracego.lang', l) } catch (e) {}
+  }
+  setTheme(t) {
+    this.setState({ theme: t })
+    try { localStorage.setItem('tracego.theme', t) } catch (e) {}
+  }
+
+  scrubFrac(e) {
+    const r = e.currentTarget.getBoundingClientRect()
+    return Math.min(1, Math.max(0, (e.clientX - r.left - 120) / (r.width - 120)))
+  }
+
+  renderVals() {
+    const st = this.state
+    const lang = this.effLang()
+    const theme = this.effTheme()
+    const L = this.copy[lang] || this.copy.en
+    const variant = this.effVariant()
+    const cb = st.cb
+    const SC = cb
+      ? { running: '#0072b2', runnable: '#9aa3b2', blocked: '#d55e00' }
+      : { running: '#4caf50', runnable: '#9aa3b2', blocked: '#c25450' }
+    const cw = cb ? L.cwCb : L.cwStd
+    const fmt = (s) => s.split('{run}').join(cw.run).split('{blk}').join(cw.blk)
+    const CC = { channel: '#5b8def', mutex: '#e0a030', other: '#a78bdb' }
+    const DIM = theme === 'light' ? '#d4d8e0' : '#2a2e38'
+    const RING = theme === 'light' ? '#12161f' : '#ffffff'
+    const GHOST = 0.15
+
+    const gs = this.goroutines.filter((g) => st.showSystem || !g.sys)
+    const byId = new Map(this.goroutines.map((g) => [g.id, g]))
+    const visIds = new Set(gs.map((g) => g.id))
+
+    let chain = null
+    if (st.selectedId !== null) {
+      chain = new Set([st.selectedId])
+      for (const e of this.edges) {
+        if (e.from === st.selectedId) chain.add(e.to)
+        if (e.to === st.selectedId) chain.add(e.from)
+      }
+    }
+
+    const lanes = gs.map((g) => ({
+      label: g.name,
+      alpha: chain && !chain.has(g.id) ? GHOST : 1,
+      labelColor: g.id === st.selectedId ? 'var(--strong)' : 'var(--text)',
+      segs: g.iv.map((iv) => ({
+        left: iv[0] + '%',
+        width: (iv[1] - iv[0]) + '%',
+        color: SC[iv[2]],
+        title: g.name + ' \u2014 ' + L.states[iv[2]] + (iv[3] ? ' (' + iv[3] + ')' : '')
+      }))
+    }))
+
+    const gNodes = gs.map((g) => {
+      const p = this.pos[g.id]
+      const s = this.stateAt(g, st.playhead)
+      return {
+        x: p[0], y: p[1], tx: p[0] + 13,
+        color: s ? SC[s] : DIM,
+        stroke: g.id === st.selectedId ? RING : 'none',
+        o: chain && !chain.has(g.id) ? GHOST : 1,
+        tag: (st.nodeLabels ?? (variant === 'inline')) ? g.name : '',
+        tip: g.name + ' \u2014 ' + (s ? L.states[s] : L.notAlive),
+        onClick: () => this.setState({ selectedId: st.selectedId === g.id ? null : g.id })
+      }
+    })
+
+    const gEdges = this.edges
+      .filter((e) => visIds.has(e.from) && visIds.has(e.to))
+      .map((e) => {
+        const a = this.pos[e.from], b = this.pos[e.to]
+        const active = !chain && Math.abs(st.playhead - e.t) <= 3
+        const incident = chain && (e.from === st.selectedId || e.to === st.selectedId)
+        return {
+          x1: a[0], y1: a[1], x2: b[0], y2: b[1],
+          color: active || incident ? CC[e.cat] : DIM,
+          w: active || incident ? 2.5 : 1.2,
+          o: chain && !incident ? GHOST : 1,
+          tip: L.cats[e.cat] + ' (' + L.inferred + '): ' + byId.get(e.from).name + ' \u2192 ' + byId.get(e.to).name
+        }
+      })
+
+    const ts = L.tour[st.tourStep - 1] || { title: '', body: '' }
+    const spot = st.spot || { x: -9999, y: -9999, w: 0, h: 0 }
+    const pop = st.pop || { x: -9999, y: -9999 }
+    const seg = (active) => ({
+      bg: active ? 'var(--accent)' : 'transparent',
+      color: active ? '#ffffff' : 'var(--muted)'
+    })
+
+    return {
+      theme,
+      loaded: st.loaded,
+      empty: !st.loaded,
+      emptyRich: (this.props.emptyVariant ?? 'rich') === 'rich',
+      emptyMinimal: (this.props.emptyVariant ?? 'rich') === 'minimal',
+      inlineHints: variant === 'inline',
+      infoText: L.info(this.goroutines.length, this.edges.length),
+      playIcon: st.playing ? '\u23f8' : '\u25b6',
+      speed: String(st.speed),
+      showSystem: st.showSystem,
+      lanes, gNodes, gEdges,
+      playheadPct: st.playhead + '%',
+      calloutsOpen: st.calloutsOpen,
+      settingsOpen: st.settingsOpen,
+      langOpts: [
+        { label: 'English', onClick: () => this.setLang('en'), ...seg(lang === 'en') },
+        { label: '\ud55c\uad6d\uc5b4', onClick: () => this.setLang('ko'), ...seg(lang === 'ko') }
+      ],
+      themeOpts: [
+        { label: L.dark, onClick: () => this.setTheme('dark'), ...seg(theme === 'dark') },
+        { label: L.light, onClick: () => this.setTheme('light'), ...seg(theme === 'light') }
+      ],
+      guideOpts: [
+        { label: L.guideTour, onClick: () => this.setGuide('tour'), ...seg(variant === 'tour') },
+        { label: L.guideCall, onClick: () => this.setGuide('callouts'), ...seg(variant === 'callouts') },
+        { label: L.guideHints, onClick: () => this.setGuide('inline'), ...seg(variant === 'inline') }
+      ],
+      toggleRows: [
+        { label: L.loopL, checked: st.loop, onChange: (e) => { this.setPref('tracego.loop', e.target.checked); this.setState({ loop: e.target.checked }) } },
+        { label: L.labelsL, checked: st.nodeLabels ?? (variant === 'inline'), onChange: (e) => { this.setPref('tracego.labels', e.target.checked); this.setState({ nodeLabels: e.target.checked }) } },
+        { label: L.cbL, checked: st.cb, onChange: (e) => { this.setPref('tracego.cb', e.target.checked); this.setState({ cb: e.target.checked }) } },
+        { label: L.sys, checked: st.showSystem, onChange: (e) => { this.setPref('tracego.sys', e.target.checked); this.setState({ showSystem: e.target.checked }) } }
+      ],
+      tGuide: L.guide,
+      swRun: SC.running, swRunnable: SC.runnable, swBlk: SC.blocked,
+      tourOpen: st.tourStep > 0,
+      tourStepLabel: L.stepLabel.replace('{n}', String(st.tourStep)),
+      tourTitle: ts.title,
+      tourBody: fmt(ts.body),
+      tourNextLabel: st.tourStep >= 4 ? L.done : L.next,
+      backOpacity: st.tourStep <= 1 ? 0.35 : 1,
+      spotX: spot.x + 'px', spotY: spot.y + 'px', spotW: spot.w + 'px', spotH: spot.h + 'px',
+      popX: pop.x + 'px', popY: pop.y + 'px',
+      tOpenBtn: L.openBtn, tOpenBtn2: L.openBtn2, tSpeed: L.speed, tSys: L.sys,
+      tHelpTip: L.helpTip, tSettingsTip: L.settingsTip, tLang: L.lang, tTheme: L.theme,
+      tEmptyTitle: L.emptyTitle, tEmptyDesc: L.emptyDesc,
+      tCard1Title: L.card1Title, tCard1Desc: fmt(L.card1Desc), tCard2Title: L.card2Title, tCard2Desc: L.card2Desc,
+      tSampleBtn: L.sampleBtn, tNoTracePre: L.noTracePre, tNoTracePost: L.noTracePost, tMinimalLine: L.minimalLine,
+      tFirstTime: L.firstTime, tBannerDesc: L.bannerDesc, tGotIt: L.gotIt,
+      tChip1Title: L.chip1T, tChip1Body: fmt(L.chip1B), tChip2Title: L.chip2T, tChip2Body: L.chip2B,
+      tChip3Title: L.chip3T, tChip3Body: L.chip3B, tChip4Title: L.chip4T, tChip4Body: L.chip4B,
+      tTlStripTitle: L.tlStripT, tTlStripDesc: L.tlStripD, tGrStripTitle: L.grStripT, tGrStripDesc: L.grStripD,
+      tLegStateGroup: L.legStateGroup, tLegEdgeGroup: L.legEdgeGroup,
+      tLegRunning: L.states.running, tLegRunnable: L.states.runnable, tLegBlocked: L.states.blocked, tLegNotAlive: L.notAlive,
+      tLegChannel: L.cats.channel + ' (' + L.inferred + ')', tLegMutex: L.cats.mutex + ' (' + L.inferred + ')', tLegOther: L.cats.other + ' (' + L.inferred + ')',
+      tLegFocusHint: L.legFocusHint,
+      tSkip: L.skip, tBack: L.back,
+      onOpen: () => this.loadSample(),
+      onSample: () => this.loadSample(),
+      onPlay: () => this.togglePlay(),
+      onSpeed: (e) => this.setState({ speed: Number(e.target.value) }),
+      onSystem: (e) => { this.setPref('tracego.sys', e.target.checked); this.setState({ showSystem: e.target.checked }) },
+      onHelp: () => { if (this.state.loaded) this.openTour() },
+      onSettings: () => this.setState({ settingsOpen: !this.state.settingsOpen }),
+      onCloseSettings: () => this.setState({ settingsOpen: false }),
+      onStopClick: (e) => e.stopPropagation(),
+      onGotIt: () => { this.setState({ calloutsOpen: false }); this.play() },
+      onTourNext: () => this.tourNext(),
+      onTourBack: () => this.tourBack(),
+      onTourSkip: () => { this.setState({ tourStep: 0 }); this.play() },
+      onScrubDown: (e) => { this.dragging = true; this.setState({ playhead: this.scrubFrac(e) * 100 }) },
+      onScrubMove: (e) => { if (this.dragging) this.setState({ playhead: this.scrubFrac(e) * 100 }) }
+    }
+  }
+}
+</script>
+</body>
+</html>
