@@ -9,13 +9,17 @@
   import Legend from './components/Legend.svelte'
   import EmptyState from './components/EmptyState.svelte'
   import SettingsPopup from './components/SettingsPopup.svelte'
+  import GuideTour from './components/GuideTour.svelte'
+  import CalloutChip from './components/CalloutChip.svelte'
+  import { withColorWords } from './lib/i18n'
 
   const { summary } = traceStore
-  const { dict, theme, sys, guide, onboarded } = prefs
+  const { dict, theme, sys, guide, onboarded, cb } = prefs
   let error = ''
   let loading = false
   let settingsOpen = false
-  let tourOpen = false // used by Task 14's GuideTour; the ? button sets it
+  let tourOpen = false
+  let calloutsOpen = false
 
   // Reflect theme on <html> so the CSS variable sets switch app-wide.
   $: if (typeof document !== 'undefined') document.documentElement.dataset.theme = $theme
@@ -39,8 +43,25 @@
     }
   }
 
+  // First-run onboarding: shown once per install, in the configured guide style.
+  // Inline hints render whenever the style is 'inline' (no flag involved).
   function onLoaded() {
-    // Task 14 wires first-run onboarding here.
+    if ($onboarded) return
+    onboarded.set(true)
+    if ($guide === 'tour') tourOpen = true
+    else if ($guide === 'callouts') {
+      calloutsOpen = true
+      traceStore.play()
+    } else traceStore.play()
+  }
+
+  function finishTour() {
+    tourOpen = false
+    traceStore.play()
+  }
+  function dismissCallouts() {
+    calloutsOpen = false
+    traceStore.play()
   }
 
   async function openSample() {
@@ -103,12 +124,40 @@
   {/if}
 
   {#if $summary}
-    <section class="timeline"><TimelineCanvas /></section>
-    <section class="graph"><GraphCanvas /></section>
+    {#if calloutsOpen}
+      <div class="banner">
+        <span class="banner-first">{$dict.firstTime}</span>
+        <span class="banner-desc">{$dict.bannerDesc}</span>
+        <button class="banner-btn" on:click={dismissCallouts}>{$dict.gotIt}</button>
+      </div>
+    {/if}
+    <section class="timeline" data-tour="timeline">
+      {#if $guide === 'inline'}
+        <div class="strip sticky"><b>{$dict.tlStripT}</b>&nbsp;·&nbsp;{$dict.tlStripD}</div>
+      {/if}
+      <TimelineCanvas />
+      {#if calloutsOpen}
+        <CalloutChip n={1} title={$dict.chip1T} body={withColorWords($dict.chip1B, $dict, $cb)} pos="top:10px; right:14px" />
+        <CalloutChip n={2} title={$dict.chip2T} body={$dict.chip2B} pos="bottom:10px; left:130px" />
+      {/if}
+    </section>
+    <section class="graph" data-tour="graph">
+      {#if $guide === 'inline'}
+        <div class="strip"><b>{$dict.grStripT}</b>&nbsp;·&nbsp;{$dict.grStripD}</div>
+      {/if}
+      <GraphCanvas />
+      {#if calloutsOpen}
+        <CalloutChip n={3} title={$dict.chip3T} body={$dict.chip3B} pos="top:12px; left:14px" />
+        <CalloutChip n={4} title={$dict.chip4T} body={$dict.chip4B} pos="bottom:12px; right:14px" />
+      {/if}
+    </section>
   {:else}
     <EmptyState on:sample={openSample} on:open={open} />
   {/if}
   {#if $summary}<Legend />{/if}
+  {#if tourOpen}
+    <GuideTour on:done={finishTour} />
+  {/if}
 </main>
 
 <style>
@@ -132,4 +181,11 @@
   .graph :global(.graph-wrap) { flex: 1; min-height: 0; }
   .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
   .round { background: transparent; color: var(--muted); border: 1px solid var(--border); width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 1; }
+  .banner { display: flex; align-items: center; gap: 10px; padding: 7px 14px; background: var(--bannerbg); border-bottom: 1px solid var(--bannerbd); font-size: 12.5px; }
+  .banner-first { color: var(--accent); font-weight: 600; }
+  .banner-desc { color: var(--muted); }
+  .banner-btn { margin-left: auto; background: var(--accent); border: 0; color: #ffffff; border-radius: 6px; padding: 4px 12px; cursor: pointer; font-size: 12px; }
+  .strip { padding: 4px 14px; background: var(--panel2); border-bottom: 1px solid var(--border); font-size: 10.5px; letter-spacing: 0.6px; color: var(--muted); }
+  .strip b { color: var(--text); font-weight: 600; }
+  .sticky { position: sticky; top: 0; z-index: 5; }
 </style>
