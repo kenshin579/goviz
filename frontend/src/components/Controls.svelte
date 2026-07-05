@@ -1,14 +1,13 @@
 <script lang="ts">
   import { traceStore } from '../stores/trace'
+  import { prefs } from '../stores/prefs'
 
-  const { playing, speed, showSystem } = traceStore
+  const { playing, speed } = traceStore
+  const { dict, sys } = prefs
   const SPEEDS = [0.25, 0.5, 1, 2, 4]
 
   function onSpeed(e: Event) {
     traceStore.setSpeed(Number((e.target as HTMLSelectElement).value))
-  }
-  function onSystem(e: Event) {
-    traceStore.setShowSystem((e.target as HTMLInputElement).checked)
   }
 </script>
 
@@ -18,7 +17,7 @@
   </button>
 
   <label class="speed">
-    Speed
+    {$dict.speed}
     <select on:change={onSpeed} value={$speed}>
       {#each SPEEDS as s}
         <option value={s}>{s}×</option>
@@ -27,14 +26,15 @@
   </label>
 
   <label class="sys">
-    <input type="checkbox" checked={$showSystem} on:change={onSystem} />
-    Show system goroutines
+    <input type="checkbox" checked={$sys} on:change={(e) => sys.set(e.currentTarget.checked)} />
+    {$dict.sys}
   </label>
 </div>
 
 <style>
   .controls { display: flex; align-items: center; gap: 14px; }
-  .play { background: #2a2e38; color: #cdd3df; border: 0; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-  .speed, .sys { font-size: 13px; color: #8a93a3; display: flex; align-items: center; gap: 6px; }
-  select { background: #161922; color: #cdd3df; border: 1px solid #2a2e38; border-radius: 4px; padding: 2px 4px; }
+  .play { background: var(--btn2); color: var(--text); border: 0; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .speed, .sys { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .sys { cursor: pointer; }
+  select { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; }
 </style>

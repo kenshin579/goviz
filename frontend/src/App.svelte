@@ -8,11 +8,14 @@
   import GraphCanvas from './components/GraphCanvas.svelte'
   import Legend from './components/Legend.svelte'
   import EmptyState from './components/EmptyState.svelte'
+  import SettingsPopup from './components/SettingsPopup.svelte'
 
   const { summary } = traceStore
-  const { theme, sys } = prefs
+  const { dict, theme, sys, guide, onboarded } = prefs
   let error = ''
   let loading = false
+  let settingsOpen = false
+  let tourOpen = false // used by Task 14's GuideTour; the ? button sets it
 
   // Reflect theme on <html> so the CSS variable sets switch app-wide.
   $: if (typeof document !== 'undefined') document.documentElement.dataset.theme = $theme
@@ -70,16 +73,27 @@
 <svelte:window on:keydown={onKeydown} />
 
 <main>
-  <header>
-    <button class="open-btn" on:click={open} disabled={loading}>Open trace…</button>
+  <header data-tour="header">
+    <button class="open-btn" on:click={open} disabled={loading}>{$dict.openBtn}</button>
     {#if $summary}
       <span class="info">
-        {$summary.goroutines.length} goroutines · {$summary.edges.length} edges ·
-        {(($summary.endTime - $summary.startTime) / 1e6).toFixed(1)} ms
+        {$dict.info(
+          $summary.goroutines.length,
+          $summary.edges.length,
+          (($summary.endTime - $summary.startTime) / 1e6).toFixed(1),
+        )}
       </span>
       <Controls />
     {/if}
+    <div class="header-right">
+      <button class="round" title={$dict.settingsTip} on:click={() => (settingsOpen = !settingsOpen)}>⚙</button>
+      <button class="round" title={$dict.helpTip} on:click={() => { if ($summary) tourOpen = true }}>?</button>
+    </div>
   </header>
+
+  {#if settingsOpen}
+    <SettingsPopup on:close={() => (settingsOpen = false)} />
+  {/if}
 
   {#if error}
     <div class="error-banner" role="alert">
@@ -116,4 +130,6 @@
   .timeline { flex: 0 0 42%; overflow: auto; border-bottom: 1px solid var(--border); position: relative; }
   .graph { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; }
   .graph :global(.graph-wrap) { flex: 1; min-height: 0; }
+  .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .round { background: transparent; color: var(--muted); border: 1px solid var(--border); width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 1; }
 </style>
