@@ -9,8 +9,9 @@ export interface Advance {
 }
 
 // nextPlayhead advances `current` by `dtMs` of real time at `speed`, mapping the
-// whole [startTime, endTime] span onto baseMs of real time. The result is
-// clamped to endTime; atEnd is true once the end is reached (or the span is 0).
+// whole [startTime, endTime] span onto baseMs of real time. Without loop the
+// result clamps to endTime (atEnd=true once reached); with loop it wraps the
+// overshoot back past startTime and never reports atEnd.
 export function nextPlayhead(
   current: number,
   dtMs: number,
@@ -18,11 +19,15 @@ export function nextPlayhead(
   startTime: number,
   endTime: number,
   baseMs: number = BASE_PLAY_MS,
+  loop: boolean = false,
 ): Advance {
   const span = endTime - startTime
   if (span <= 0) return { time: endTime, atEnd: true }
   const delta = (dtMs / baseMs) * span * speed
   const next = current + delta
-  if (next >= endTime) return { time: endTime, atEnd: true }
+  if (next >= endTime) {
+    if (loop) return { time: startTime + ((next - startTime) % span), atEnd: false }
+    return { time: endTime, atEnd: true }
+  }
   return { time: next, atEnd: false }
 }
