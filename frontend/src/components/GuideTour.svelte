@@ -14,7 +14,10 @@
   function measure() {
     const el = document.querySelector(`[data-tour="${TOUR_TARGETS[step - 1]}"]`)
     if (!el) {
+      // Target missing (layout changed?) — end the tour rather than leaving an
+      // invisible overlay the user cannot dismiss.
       placement = null
+      dispatch('done')
       return
     }
     placement = placeTour(el.getBoundingClientRect(), window.innerWidth, window.innerHeight)

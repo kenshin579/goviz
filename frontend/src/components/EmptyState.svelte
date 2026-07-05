@@ -6,6 +6,9 @@
   const { dict, palette, cb } = prefs
   const dispatch = createEventDispatcher<{ sample: void; open: void }>()
 
+  // Disables both CTAs while App is already loading a trace.
+  export let loading = false
+
   // Static preview-lane segments (percent widths), copied from the mockup.
   const LANES: { label: string; segs: { w: number; s: 'running' | 'runnable' | 'blocked' }[] }[] = [
     { label: 'main', segs: [{ w: 12, s: 'running' }, { w: 55, s: 'blocked' }, { w: 33, s: 'running' }] },
@@ -52,8 +55,8 @@
       </div>
     </div>
     <div class="actions">
-      <button class="primary" on:click={() => dispatch('sample')}>{$dict.sampleBtn}</button>
-      <button class="secondary" on:click={() => dispatch('open')}>{$dict.openBtn2}</button>
+      <button class="primary" disabled={loading} on:click={() => dispatch('sample')}>{$dict.sampleBtn}</button>
+      <button class="secondary" disabled={loading} on:click={() => dispatch('open')}>{$dict.openBtn2}</button>
     </div>
     <div class="hint">
       {$dict.noTracePre}

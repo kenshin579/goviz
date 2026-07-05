@@ -22,6 +22,8 @@
   ]
 </script>
 
+<svelte:window on:keydown={(e) => { if (e.key === 'Escape') dispatch('close') }} />
+
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div class="overlay" on:click={() => dispatch('close')}>
   <div class="panel" on:click|stopPropagation>

@@ -20,6 +20,9 @@
   let settingsOpen = false
   let tourOpen = false
   let calloutsOpen = false
+  // Only the first-run tour should auto-play on finish; a ?-triggered replay
+  // must leave playback exactly as the user had it.
+  let playOnTourDone = false
 
   // Reflect theme on <html> so the CSS variable sets switch app-wide.
   $: if (typeof document !== 'undefined') document.documentElement.dataset.theme = $theme
@@ -48,8 +51,10 @@
   function onLoaded() {
     if ($onboarded) return
     onboarded.set(true)
-    if ($guide === 'tour') tourOpen = true
-    else if ($guide === 'callouts') {
+    if ($guide === 'tour') {
+      playOnTourDone = true
+      tourOpen = true
+    } else if ($guide === 'callouts') {
       calloutsOpen = true
       traceStore.play()
     } else traceStore.play()
@@ -57,7 +62,10 @@
 
   function finishTour() {
     tourOpen = false
-    traceStore.play()
+    if (playOnTourDone) {
+      playOnTourDone = false
+      traceStore.play()
+    }
   }
   function dismissCallouts() {
     calloutsOpen = false
@@ -81,6 +89,7 @@
   }
 
   function onKeydown(e: KeyboardEvent) {
+    if (tourOpen || settingsOpen) return
     if (e.code !== 'Space' || !$summary) return
     // If a control (button/select/checkbox) is focused, let its native Space
     // activation handle it — otherwise both fire and the toggle cancels out.
@@ -108,7 +117,7 @@
     {/if}
     <div class="header-right">
       <button class="round" title={$dict.settingsTip} on:click={() => (settingsOpen = !settingsOpen)}>⚙</button>
-      <button class="round" title={$dict.helpTip} on:click={() => { if ($summary) tourOpen = true }}>?</button>
+      <button class="round" title={$dict.helpTip} disabled={!$summary} on:click={() => { if ($summary) tourOpen = true }}>?</button>
     </div>
   </header>
 
@@ -152,7 +161,7 @@
       {/if}
     </section>
   {:else}
-    <EmptyState on:sample={openSample} on:open={open} />
+    <EmptyState loading={loading} on:sample={openSample} on:open={open} />
   {/if}
   {#if $summary}<Legend />{/if}
   {#if tourOpen}
