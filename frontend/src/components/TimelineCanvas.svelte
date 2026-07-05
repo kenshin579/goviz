@@ -10,8 +10,10 @@
   import { intervalTooltip, regionTooltip, logTooltip, taskTooltip } from '../lib/tooltip'
   import { taskColor } from '../lib/format'
   import { causalNeighbors } from '../lib/causalFocus'
+  import { prefs } from '../stores/prefs'
 
   const { summary, playhead, showSystem, selectedId, setPlayhead, collapsedGroups, toggleGroup } = traceStore
+  const { dict } = prefs
 
   let container: HTMLDivElement
   let canvas: HTMLCanvasElement
@@ -215,7 +217,7 @@
     if (!h) {
       tip = null
     } else if (h.kind === 'interval') {
-      tip = { text: intervalTooltip(h.lane.label, h.rect.state, h.rect.blockReason), x, y }
+      tip = { text: intervalTooltip(h.lane.label, h.rect.state, h.rect.blockReason, $dict), x, y }
     } else if (h.kind === 'region') {
       tip = { text: regionTooltip(h.region.name, h.region.start, h.region.end), x, y }
     } else {

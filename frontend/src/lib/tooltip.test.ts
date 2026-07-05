@@ -1,32 +1,28 @@
 import { describe, it, expect } from 'vitest'
 import { intervalTooltip, nodeTooltip, edgeTooltip } from './tooltip'
+import { t } from './i18n'
+const EN = t('en')
+const KO = t('ko')
 
 describe('intervalTooltip', () => {
-  it('shows label, state, and block reason for a blocked interval', () => {
-    expect(intervalTooltip('main.worker', 'blocked', 'chan receive')).toBe(
-      'main.worker\nblocked · chan receive',
-    )
-  })
-  it('omits the reason when running/runnable or reason is empty', () => {
-    expect(intervalTooltip('main.a', 'running', '')).toBe('main.a\nrunning')
-    expect(intervalTooltip('g5', 'blocked', '')).toBe('g5\nblocked')
+  it('shows label + localized state, appending the block reason when present', () => {
+    expect(intervalTooltip('worker', 'blocked', 'chan receive', EN)).toBe('worker\nblocked · chan receive')
+    expect(intervalTooltip('worker', 'running', '', EN)).toBe('worker\nrunning')
+    expect(intervalTooltip('worker', 'blocked', 'chan receive', KO)).toBe('worker\n차단됨 · chan receive')
   })
 })
 
 describe('nodeTooltip', () => {
-  it('shows the goroutine and its state at the playhead', () => {
-    expect(nodeTooltip('main.a', 'running')).toBe('main.a\nrunning')
-  })
-  it('says not-alive when the state is null', () => {
-    expect(nodeTooltip('g9', null)).toBe('g9\nnot running at this time')
+  it('falls back to the localized not-alive text', () => {
+    expect(nodeTooltip('g7', null, EN)).toBe('g7\nnot alive')
+    expect(nodeTooltip('g7', 'running', KO)).toBe('g7\n실행 중')
   })
 })
 
 describe('edgeTooltip', () => {
-  it('labels the relation as inferred (no channel identity in the trace)', () => {
-    expect(edgeTooltip('channel', 'g1', 'g2')).toBe('g1 → g2\nchannel communication (inferred)')
-    expect(edgeTooltip('mutex', 'main.a', 'g3')).toBe('main.a → g3\nmutex synchronization (inferred)')
-    expect(edgeTooltip('other', 'g1', 'g2')).toBe('g1 → g2\nunblock (inferred)')
+  it('labels the category and marks it inferred, localized', () => {
+    expect(edgeTooltip('channel', 'producer', 'consumer', EN)).toBe('producer → consumer\nchannel (inferred)')
+    expect(edgeTooltip('mutex', 'a', 'b', KO)).toBe('a → b\n뮤텍스 (추정)')
   })
 })
 

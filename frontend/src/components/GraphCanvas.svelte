@@ -23,8 +23,10 @@
   import { causalNeighbors } from '../lib/causalFocus'
   import { collapseGraph } from '../lib/graphCollapse'
   import { groupGoroutines } from '../lib/grouping'
+  import { prefs } from '../stores/prefs'
 
   const { summary, playhead, showSystem, selectedId, collapsedGroups, toggleGroup } = traceStore
+  const { dict } = prefs
 
   let container: HTMLDivElement
   let canvas: HTMLCanvasElement
@@ -301,7 +303,7 @@
         tip = { text: n.label, x: px, y: py }
       } else {
         const g = goroutineById.get(n.id)
-        tip = { text: nodeTooltip(n.label, g ? stateAt(g, $playhead) : null), x: px, y: py }
+        tip = { text: nodeTooltip(n.label, g ? stateAt(g, $playhead) : null, $dict), x: px, y: py }
       }
       return
     }
@@ -316,7 +318,7 @@
     if (best) {
       const s = best.l.source as unknown as GraphNode
       const t = best.l.target as unknown as GraphNode
-      tip = { text: edgeTooltip(best.l.category, labelOf(s.id), labelOf(t.id)), x: px, y: py }
+      tip = { text: edgeTooltip(best.l.category, labelOf(s.id), labelOf(t.id), $dict), x: px, y: py }
     } else {
       tip = null
     }
