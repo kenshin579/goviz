@@ -88,25 +88,19 @@ func TestLoadSampleTraceInvariants(t *testing.T) {
 	if sum.EndTime <= sum.StartTime {
 		t.Fatalf("bad time range: %d..%d", sum.StartTime, sum.EndTime)
 	}
-	hasChannelEdge := false
+	hasChannelEdge, hasMutexEdge := false, false
 	for _, e := range sum.Edges {
-		if e.Category == model.CategoryChannel {
+		switch e.Category {
+		case model.CategoryChannel:
 			hasChannelEdge = true
-			break
+		case model.CategoryMutex:
+			hasMutexEdge = true
 		}
 	}
 	if !hasChannelEdge {
 		t.Fatal("expected at least one channel causal edge in the sample")
 	}
-	hasMutexBlock := false
-	for _, g := range sum.Goroutines {
-		for _, iv := range g.Intervals {
-			if iv.State == model.StateBlocked && strings.Contains(iv.BlockReason, "sync") {
-				hasMutexBlock = true
-			}
-		}
-	}
-	if !hasMutexBlock {
-		t.Fatal("expected at least one sync-blocked interval in the sample")
+	if !hasMutexEdge {
+		t.Fatal("expected at least one mutex causal edge in the sample")
 	}
 }

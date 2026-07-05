@@ -18,6 +18,9 @@ import (
 // App is the Wails-bound application backend.
 type App struct {
 	ctx context.Context
+	// sampleMu serializes LoadSampleTrace: the runtime tracer is process-global
+	// and Wails may dispatch bindings concurrently.
+	sampleMu sync.Mutex
 }
 
 // NewApp creates a new App application struct.
@@ -70,12 +73,16 @@ func (a *App) OpenTraceDialog() (*model.TraceSummary, error) {
 // channel (guaranteed rendezvous blocking → channel causal edges) with three
 // workers contending on one mutex (→ mutex edges).
 func (a *App) LoadSampleTrace() (*model.TraceSummary, error) {
+	a.sampleMu.Lock()
+	defer a.sampleMu.Unlock()
 	var buf bytes.Buffer
 	if err := trace.Start(&buf); err != nil {
 		return nil, errors.New("Couldn't record the sample trace — please try again.")
 	}
-	runSampleWorkload()
-	trace.Stop()
+	func() {
+		defer trace.Stop()
+		runSampleWorkload()
+	}()
 	sum, err := parse.Parse(&buf)
 	if err != nil {
 		return nil, errors.New(classifyOpenError(err))
