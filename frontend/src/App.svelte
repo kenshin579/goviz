@@ -1,6 +1,7 @@
 <script lang="ts">
   import { OpenTraceDialog } from '../wailsjs/go/main/App'
   import { traceStore } from './stores/trace'
+  import { prefs } from './stores/prefs'
   import type { TraceSummary } from './lib/types'
   import TimelineCanvas from './components/TimelineCanvas.svelte'
   import Controls from './components/Controls.svelte'
@@ -8,8 +9,15 @@
   import Legend from './components/Legend.svelte'
 
   const { summary } = traceStore
+  const { theme, sys } = prefs
   let error = ''
   let loading = false
+
+  // Reflect theme on <html> so the CSS variable sets switch app-wide.
+  $: if (typeof document !== 'undefined') document.documentElement.dataset.theme = $theme
+  // prefs.sys is the persisted source of truth; traceStore mirrors it for the
+  // existing filter plumbing (both canvases read traceStore.showSystem).
+  $: traceStore.setShowSystem($sys)
 
   async function open() {
     error = ''
@@ -66,11 +74,11 @@
 </main>
 
 <style>
-  main { font-family: system-ui, sans-serif; color: #cdd3df; background: #0f1117; height: 100vh; display: flex; flex-direction: column; }
-  header { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #2a2e38; }
-  .open-btn { background: #5b8def; color: white; border: 0; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  main { font-family: system-ui, sans-serif; color: var(--text); background: var(--bg); height: 100vh; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .open-btn { background: var(--accent); color: white; border: 0; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
   .open-btn:disabled { opacity: 0.6; cursor: default; }
-  .info { font-size: 13px; color: #8a93a3; }
+  .info { font-size: 13px; color: var(--muted); }
   .error-banner {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 14px; background: #3a2326; border-bottom: 1px solid #5e2f33;
@@ -81,7 +89,8 @@
     background: transparent; border: 0; color: #f0b7b3; cursor: pointer;
     font-size: 18px; line-height: 1; padding: 0 4px;
   }
-  .timeline { flex: 0 0 42%; overflow: auto; border-bottom: 1px solid #2a2e38; }
-  .graph { flex: 1; min-height: 0; }
-  .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #5b6270; }
+  .timeline { flex: 0 0 42%; overflow: auto; border-bottom: 1px solid var(--border); position: relative; }
+  .graph { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; }
+  .graph :global(.graph-wrap) { flex: 1; min-height: 0; }
+  .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--faint); }
 </style>
