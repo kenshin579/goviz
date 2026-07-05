@@ -1,5 +1,5 @@
 // Command tracedump parses a Go execution trace and prints the normalized
-// trace-go summary as indented JSON. Usage: tracedump <trace.out>
+// goviz summary as indented JSON. Usage: tracedump <trace.out>
 package main
 
 import (
@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kenshin579/trace-go/internal/parse"
+	"github.com/kenshin579/goviz/internal/parse"
 )
 
 func main() {

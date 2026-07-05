@@ -5,7 +5,7 @@ package causality
 import (
 	"strings"
 
-	"github.com/kenshin579/trace-go/internal/model"
+	"github.com/kenshin579/goviz/internal/model"
 )
 
 // Classify maps a goroutine's block reason to an edge category. The matching is

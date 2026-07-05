@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kenshin579/trace-go/internal/model"
-	"github.com/kenshin579/trace-go/internal/parse"
+	"github.com/kenshin579/goviz/internal/model"
+	"github.com/kenshin579/goviz/internal/parse"
 )
 
 func TestParseTasks(t *testing.T) {

@@ -30,7 +30,7 @@ jobs:
       - name: Package .app bundle as a zip
         run: |
           cd build/bin
-          ditto -c -k --keepParent trace-go.app "trace-go-${GITHUB_REF_NAME}-darwin-arm64.zip"
+          ditto -c -k --keepParent goviz.app "goviz-${GITHUB_REF_NAME}-darwin-arm64.zip"
       - name: Create GitHub Release and attach the build
         uses: softprops/action-gh-release@v2
         with:

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/kenshin579/trace-go/internal/model"
+	"github.com/kenshin579/goviz/internal/model"
 )
 
 // writeSampleTrace runs an unbuffered send/recv rendezvous under the tracer and

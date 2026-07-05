@@ -3,7 +3,7 @@ package causality
 import (
 	"testing"
 
-	"github.com/kenshin579/trace-go/internal/model"
+	"github.com/kenshin579/goviz/internal/model"
 )
 
 func TestClassify(t *testing.T) {

@@ -1,16 +1,16 @@
-# trace-go Plan 2A — Wails Shell + OpenTrace Binding + Timeline View
+# goviz Plan 2A — Wails Shell + OpenTrace Binding + Timeline View
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Stand up the Wails desktop app for `trace-go`, wire the existing Go parser to the frontend through an `OpenTrace` binding, and render an interactive goroutine **timeline** (lanes + state colors + draggable playhead/scrub) from a real trace file.
+**Goal:** Stand up the Wails desktop app for `goviz`, wire the existing Go parser to the frontend through an `OpenTrace` binding, and render an interactive goroutine **timeline** (lanes + state colors + draggable playhead/scrub) from a real trace file.
 
 **Architecture:** A Wails v2 app (Go backend + Svelte 3/TypeScript frontend) layered on the existing pure-Go backend. The Go `App` exposes `OpenTrace(path)`/`OpenTraceDialog()` that call `internal/parse.Parse` and return the JSON-marshaled `model.TraceSummary`. The frontend keeps all view math in pure, unit-tested TypeScript modules (`lib/`), and thin Svelte components (`TimelineCanvas.svelte`) that only draw a precomputed layout to a `<canvas>`. A Svelte store holds the loaded summary, the playhead time, and the visible time viewport.
 
 **Tech Stack:** Wails v2.11, Go 1.25+, Svelte 3 + TypeScript + Vite (the default `svelte-ts` template), Vitest for pure-logic unit tests, HTML Canvas 2D for rendering.
 
-**Scope note:** This is Plan 2A of the `trace-go` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements spec phase 0 (scaffold) and phase 3 (timeline + file open + scrub). The **live graph view, playback/animation, and timeline↔graph sync (spec §4 lower half, phases 4–5)** are **Plan 2B**, written after 2A proves the data contract renders correctly in a real window. Plan 1 (the parser) is already merged on `main`.
+**Scope note:** This is Plan 2A of the `goviz` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements spec phase 0 (scaffold) and phase 3 (timeline + file open + scrub). The **live graph view, playback/animation, and timeline↔graph sync (spec §4 lower half, phases 4–5)** are **Plan 2B**, written after 2A proves the data contract renders correctly in a real window. Plan 1 (the parser) is already merged on `main`.
 
-**Prerequisites verified on this machine:** `wails v2.11.0`, `node v25`, `npm 11`, `go 1.26`, `clang`. Module path is `github.com/kenshin579/trace-go`; `internal/parse.Parse(io.Reader) (*model.TraceSummary, error)` and `internal/model` already exist and are tested.
+**Prerequisites verified on this machine:** `wails v2.11.0`, `node v25`, `npm 11`, `go 1.26`, `clang`. Module path is `github.com/kenshin579/goviz`; `internal/parse.Parse(io.Reader) (*model.TraceSummary, error)` and `internal/model` already exist and are tested.
 
 ---
 
@@ -55,26 +55,26 @@ This is a setup task (not TDD). It merges a fresh `wails init` into the current 
 Run:
 ```bash
 TMP=$(mktemp -d)
-( cd "$TMP" && wails init -n trace-go -t svelte-ts )
-ls "$TMP/trace-go"
+( cd "$TMP" && wails init -n goviz -t svelte-ts )
+ls "$TMP/goviz"
 ```
-Expected: a `trace-go` dir containing `main.go`, `app.go`, `wails.json`, `build/`, `frontend/`, plus a throwaway `go.mod`/`go.sum`/`.gitignore`/`README.md`.
+Expected: a `goviz` dir containing `main.go`, `app.go`, `wails.json`, `build/`, `frontend/`, plus a throwaway `go.mod`/`go.sum`/`.gitignore`/`README.md`.
 
 - [ ] **Step 2: Copy the Wails files into the repo (NOT its go.mod/go.sum/README/.gitignore)**
 
-Run (repo root = `/Users/user/GolandProjects/trace-go`):
+Run (repo root = `/Users/user/GolandProjects/goviz`):
 ```bash
-REPO=/Users/user/GolandProjects/trace-go
-cp "$TMP/trace-go/main.go" "$TMP/trace-go/app.go" "$TMP/trace-go/wails.json" "$REPO/"
-cp -R "$TMP/trace-go/build" "$REPO/build"
-cp -R "$TMP/trace-go/frontend" "$REPO/frontend"
+REPO=/Users/user/GolandProjects/goviz
+cp "$TMP/goviz/main.go" "$TMP/goviz/app.go" "$TMP/goviz/wails.json" "$REPO/"
+cp -R "$TMP/goviz/build" "$REPO/build"
+cp -R "$TMP/goviz/frontend" "$REPO/frontend"
 ls "$REPO"
 ```
 Expected: repo now has `main.go`, `app.go`, `wails.json`, `build/`, `frontend/` alongside the existing `cmd/`, `internal/`, `docs/`, `go.mod`.
 
 - [ ] **Step 3: Merge Wails ignore rules into the repo `.gitignore`**
 
-Append to `/Users/user/GolandProjects/trace-go/.gitignore` (note the `gitkeep` exception so the embed target survives a clean checkout — the file is literally named `gitkeep`, no dot):
+Append to `/Users/user/GolandProjects/goviz/.gitignore` (note the `gitkeep` exception so the embed target survives a clean checkout — the file is literally named `gitkeep`, no dot):
 ```gitignore
 
 # Wails
@@ -88,22 +88,22 @@ frontend/dist/*
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go get github.com/wailsapp/wails/v2@v2.11.0
 go mod tidy
 head -3 go.mod
 ```
-Expected: module line still `module github.com/kenshin579/trace-go`; `go.mod` now requires both `golang.org/x/exp` and `github.com/wailsapp/wails/v2`. (The `go` directive may be `1.25.0`+ — accepted, per Plan 1.)
+Expected: module line still `module github.com/kenshin579/goviz`; `go.mod` now requires both `golang.org/x/exp` and `github.com/wailsapp/wails/v2`. (The `go` directive may be `1.25.0`+ — accepted, per Plan 1.)
 
 - [ ] **Step 5: Set the window title in `main.go`**
 
-In `main.go`, the `options.App` `Title` is already `"trace-go"`. Leave it. No edit needed unless it differs; if it does, set `Title: "trace-go"`.
+In `main.go`, the `options.App` `Title` is already `"goviz"`. Leave it. No edit needed unless it differs; if it does, set `Title: "goviz"`.
 
 - [ ] **Step 6: Verify the app builds (Go + frontend embed)**
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go build ./...
 go test ./internal/... ./cmd/...
 ```
@@ -113,7 +113,7 @@ Expected: `go build ./...` succeeds (the root `main` package compiles; `//go:emb
 
 Run (this installs npm deps and builds the production bundle + binary; it can take a few minutes the first time):
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ls build/bin
 ```
@@ -122,7 +122,7 @@ Expected: `wails build` completes without error and produces an app bundle/binar
 - [ ] **Step 8: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add -A
 git commit -m "chore: scaffold wails v2 svelte-ts app into module"
 ```
@@ -197,7 +197,7 @@ func TestOpenTraceMissingFileErrors(t *testing.T) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test . -run TestOpenTrace
 ```
 Expected: FAIL — `app.OpenTrace undefined` (only `Greet` exists).
@@ -214,8 +214,8 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/kenshin579/trace-go/internal/model"
-	"github.com/kenshin579/trace-go/internal/parse"
+	"github.com/kenshin579/goviz/internal/model"
+	"github.com/kenshin579/goviz/internal/parse"
 )
 
 // App is the Wails-bound application backend.
@@ -267,7 +267,7 @@ func (a *App) OpenTraceDialog() (*model.TraceSummary, error) {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go test . -run TestOpenTrace -v
 ```
 Expected: both tests PASS.
@@ -276,7 +276,7 @@ Expected: both tests PASS.
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails generate module
 cat frontend/wailsjs/go/main/App.d.ts
 ```
@@ -285,7 +285,7 @@ Expected: `App.d.ts` now declares `OpenTrace(arg1:string): Promise<model.TraceSu
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add app.go app_test.go frontend/wailsjs
 git commit -m "feat(app): expose OpenTrace/OpenTraceDialog bindings"
 ```
@@ -300,7 +300,7 @@ git commit -m "feat(app): expose OpenTrace/OpenTraceDialog bindings"
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm install -D vitest@^1.6.0
 ```
 Expected: `vitest` added under `devDependencies` in `frontend/package.json`.
@@ -341,7 +341,7 @@ describe('vitest', () => {
 ```
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test
 ```
 Expected: 1 passing test.
@@ -349,9 +349,9 @@ Expected: 1 passing test.
 - [ ] **Step 5: Remove the smoke test and commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 rm src/lib/smoke.test.ts
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/package.json frontend/package-lock.json frontend/vitest.config.ts
 git commit -m "test(frontend): add vitest runner"
 ```
@@ -396,7 +396,7 @@ describe('makeTimeScale', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timeMap
 ```
 Expected: FAIL — cannot find `./timeMap`.
@@ -433,7 +433,7 @@ export function makeTimeScale(
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timeMap
 ```
 Expected: all 3 tests PASS.
@@ -441,7 +441,7 @@ Expected: all 3 tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/timeMap.ts frontend/src/lib/timeMap.test.ts
 git commit -m "feat(frontend): add linear time-pixel scale"
 ```
@@ -492,7 +492,7 @@ describe('stateColor', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- format
 ```
 Expected: FAIL — cannot find `./format`.
@@ -531,7 +531,7 @@ export function stateColor(state: IntervalState): string {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- format
 ```
 Expected: all tests PASS.
@@ -539,7 +539,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/format.ts frontend/src/lib/format.test.ts
 git commit -m "feat(frontend): add display helpers (label, effective end, state color)"
 ```
@@ -668,7 +668,7 @@ export interface TraceSummary {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: FAIL — cannot find `./timelineLayout`.
@@ -736,7 +736,7 @@ export function layoutTimeline(summary: TraceSummary, opts: LayoutOptions): Lane
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: all tests PASS.
@@ -745,7 +745,7 @@ Expected: all tests PASS.
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test
 ```
 Expected: timeMap, format, timelineLayout suites all PASS.
@@ -753,7 +753,7 @@ Expected: timeMap, format, timelineLayout suites all PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/types.ts frontend/src/lib/timelineLayout.ts frontend/src/lib/timelineLayout.test.ts
 git commit -m "feat(frontend): add pure timeline layout"
 ```
@@ -816,7 +816,7 @@ describe('createTraceStore', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- stores/trace
 ```
 Expected: FAIL — cannot find `./trace`.
@@ -866,7 +866,7 @@ export const traceStore = createTraceStore()
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- stores/trace
 ```
 Expected: all tests PASS.
@@ -874,7 +874,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/stores/trace.ts frontend/src/stores/trace.test.ts
 git commit -m "feat(frontend): add trace store with clamped playhead"
 ```
@@ -1054,7 +1054,7 @@ Replace `frontend/src/App.svelte` with this exact content:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check
 ```
 Expected: `svelte-check` passes with 0 errors (warnings about a11y are acceptable). If `OpenTraceDialog`'s generated return type differs, cast via `as unknown as TraceSummary` at the call site only.
@@ -1063,7 +1063,7 @@ Expected: `svelte-check` passes with 0 errors (warnings about a11y are acceptabl
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test
 ```
 Expected: all lib/store suites PASS (unchanged).
@@ -1072,7 +1072,7 @@ Expected: all lib/store suites PASS (unchanged).
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 go run ./cmd/tracedump --help 2>/dev/null; true
 # Generate a real trace to open:
 mkdir -p /tmp/tg2 && cat > /tmp/tg2/main.go <<'GO'
@@ -1093,7 +1093,7 @@ This step requires a human (or a screenshot tool) to confirm the visuals. Report
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/App.svelte frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): timeline canvas with file open and scrub"
 ```

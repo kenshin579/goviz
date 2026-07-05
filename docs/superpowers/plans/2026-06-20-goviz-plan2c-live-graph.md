@@ -1,4 +1,4 @@
-# trace-go Plan 2C — Live Goroutine Graph + Timeline Sync
+# goviz Plan 2C — Live Goroutine Graph + Timeline Sync
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Svelte 3 + TypeScript + Vite, Vitest, HTML Canvas 2D, **`d3-force` v3** (new dependency) for layout only (we render to canvas ourselves).
 
-**Scope note:** This is Plan 2C of the `trace-go` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`) — it completes the **hybrid visualization** (spec §4: live graph view, timeline↔graph sync, goroutine click cross-highlight) that 2A (timeline) and 2B (playback + filter) set up. Plans 1, 2A, 2B are merged on `main`. Out of scope (a possible Plan 2D polish): edge "flash" tween animation, large-trace (1000s of nodes) performance/WebGL, graph zoom/pan.
+**Scope note:** This is Plan 2C of the `goviz` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`) — it completes the **hybrid visualization** (spec §4: live graph view, timeline↔graph sync, goroutine click cross-highlight) that 2A (timeline) and 2B (playback + filter) set up. Plans 1, 2A, 2B are merged on `main`. Out of scope (a possible Plan 2D polish): edge "flash" tween animation, large-trace (1000s of nodes) performance/WebGL, graph zoom/pan.
 
 **Current state (verified):** `stores/trace.ts` exposes `summary`/`playhead`/`playing`/`speed`/`showSystem` + actions. `lib/` has `timeMap`, `format`, `timelineLayout`, `filter`, `playback`, `types`. `components/TimelineCanvas.svelte` renders `visibleGoroutines($summary,$showSystem)` and redraws on `$playhead`; its playhead is drawn `lineTo(x, cssHeight)` (the dangling line to fix). `App.svelte` has a `header` (Open + Controls) and one `.timeline` section. 30 vitest tests pass.
 
@@ -87,7 +87,7 @@ describe('activeEdges', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- activeAt
 ```
 Expected: FAIL — cannot find `./activeAt`.
@@ -120,7 +120,7 @@ export function activeEdges(edges: CausalEdge[], t: number, windowNs: number): C
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- activeAt
 ```
 Expected: all tests PASS.
@@ -128,7 +128,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/activeAt.ts frontend/src/lib/activeAt.test.ts
 git commit -m "feat(frontend): add stateAt + activeEdges time-slice helpers"
 ```
@@ -185,7 +185,7 @@ describe('buildGraphModel', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphModel
 ```
 Expected: FAIL — cannot find `./graphModel`.
@@ -243,7 +243,7 @@ export function buildGraphModel(goroutines: Goroutine[], edges: CausalEdge[]): G
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- graphModel
 ```
 Expected: all tests PASS.
@@ -251,7 +251,7 @@ Expected: all tests PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/graphModel.ts frontend/src/lib/graphModel.test.ts
 git commit -m "feat(frontend): add pure graph model builder"
 ```
@@ -295,7 +295,7 @@ describe('createTraceStore selection', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- stores/trace
 ```
 Expected: FAIL — `s.selectedId`/`s.setSelected`/`s.toggleSelected` undefined.
@@ -333,7 +333,7 @@ and (after `setShowSystem(v: boolean): void`):
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- stores/trace
 ```
 Expected: all store tests PASS (previous + 3 new selection tests).
@@ -341,7 +341,7 @@ Expected: all store tests PASS (previous + 3 new selection tests).
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/stores/trace.ts frontend/src/stores/trace.test.ts
 git commit -m "feat(frontend): add selected-goroutine state to trace store"
 ```
@@ -356,7 +356,7 @@ git commit -m "feat(frontend): add selected-goroutine state to trace store"
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm install d3-force@^3.0.0
 npm install -D @types/d3-force@^3.0.0
 ```
@@ -366,7 +366,7 @@ Expected: `d3-force` in `dependencies`, `@types/d3-force` in `devDependencies`.
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test && npm run check
 ```
 Expected: all unit suites pass; `svelte-check` 0 errors.
@@ -374,7 +374,7 @@ Expected: all unit suites pass; `svelte-check` 0 errors.
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/package.json frontend/package-lock.json
 git commit -m "chore(frontend): add d3-force for graph layout"
 ```
@@ -532,7 +532,7 @@ Create `frontend/src/components/GraphCanvas.svelte`:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check
 ```
 Expected: 0 errors (a11y hints acceptable). Note: after `forceLink(...).id(...)`, d3 mutates `link.source`/`link.target` from numbers into `GraphNode` refs in place — the draw code reads `.x`/`.y` off them via the `as unknown as GraphNode` casts, which is why those casts are present and correct.
@@ -540,7 +540,7 @@ Expected: 0 errors (a11y hints acceptable). Note: after `forceLink(...).id(...)`
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/GraphCanvas.svelte
 git commit -m "feat(frontend): add live force-directed goroutine graph"
 ```
@@ -627,7 +627,7 @@ to:
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
 ```
 Expected: 0 check errors; all unit suites pass (activeAt, graphModel, playback, filter, timeMap, format, timelineLayout, stores/trace).
@@ -636,14 +636,14 @@ Expected: 0 check errors; all unit suites pass (activeAt, graphModel, playback, 
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: builds successfully (frontend bundles d3-force + new component, binary links).
 
 - [ ] **Step 5: Manual visual verification (human)**
 
-Run `wails dev` (or open `build/bin/trace-go.app`), open a trace (e.g. `~/Desktop/trace.out`), and confirm:
+Run `wails dev` (or open `build/bin/goviz.app`), open a trace (e.g. `~/Desktop/trace.out`), and confirm:
 1. Below the timeline, a **graph** of goroutine nodes appears, connected by edges, laid out (force-directed) without overlapping piles.
 2. **Playing/scrubbing** recolors nodes live (green=running / red=blocked / gray=runnable; dim for not-yet-created/ended) and the layout stays put (no re-jitter on time change). Edges near the playhead time light up blue.
 3. **Clicking a node** outlines it white AND outlines that goroutine's lane in the timeline above; clicking it again clears the selection.
@@ -654,7 +654,7 @@ This needs a human (or the controller running the app). Report observations. If 
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/App.svelte frontend/src/components/TimelineCanvas.svelte
 git commit -m "feat(frontend): split timeline/graph layout, selection highlight, playhead fix"
 ```

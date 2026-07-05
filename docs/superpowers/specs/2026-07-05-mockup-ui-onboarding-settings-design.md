@@ -1,12 +1,12 @@
 # UI 개선: 온보딩·설정·테마·i18n·리치 빈 화면 (목업 기반)
 
 - 날짜: 2026-07-05
-- 근거 목업: `docs/design/UI 사용성 개선 제안/TraceGo Onboarding.dc.html`
+- 근거 목업: `docs/design/UI 사용성 개선 제안/GoViz Onboarding.dc.html`
 - 범위: 목업의 6개 기능 묶음 전부, **단일 PR**로 구현
 
 ## 배경
 
-`docs/design`의 인터랙티브 목업은 trace-go의 사용성 개선안(온보딩 가이드, 설정 팝업, 리치 빈
+`docs/design`의 인터랙티브 목업은 goviz의 사용성 개선안(온보딩 가이드, 설정 팝업, 리치 빈
 화면, i18n, 라이트 테마, 범례 정리)을 담고 있다. 이 스펙은 목업을 실제 앱으로 옮길 때
 **누락되는 포인트가 없도록** 전체 요소를 체크리스트로 항목화하고, 구현 구조를 정의한다.
 
@@ -16,7 +16,7 @@
 |---|---|
 | 범위 | 목업 6개 묶음 전부 (온보딩, 설정, 빈 화면+샘플, i18n, 테마+색약, 범례) |
 | PR 전략 | 단일 PR |
-| 가이드 자동 표시 | **최초 1회만** (`tracego.onboarded` localStorage 플래그), 이후 `?` 버튼으로 수동 실행 |
+| 가이드 자동 표시 | **최초 1회만** (`goviz.onboarded` localStorage 플래그), 이후 `?` 버튼으로 수동 실행 |
 | 언어 기본값 | `navigator.language`가 `ko*`면 한국어, 아니면 영어 (설정에서 변경 가능) |
 | 구현 접근 | 경량 자체 구현 — i18n 라이브러리 없음, 샘플 트레이스는 Go에서 런타임 생성 |
 | 빈 화면 | 목업의 `rich` 변형 채택 (`minimal`은 A/B 시안이므로 제외) |
@@ -43,17 +43,17 @@ app.go           ← LoadSampleTrace() 바인딩 추가 (유일한 Go 작업)
 
 | localStorage 키 | 타입 | 기본값 |
 |---|---|---|
-| `tracego.lang` | `'en' \| 'ko'` | 로케일 자동 감지 |
-| `tracego.theme` | `'dark' \| 'light'` | `dark` |
-| `tracego.guide` | `'tour' \| 'callouts' \| 'inline'` | `tour` |
-| `tracego.loop` | boolean | `false` |
-| `tracego.labels` | boolean \| null | `null` (null이면 guide가 `inline`일 때만 on — 목업 `nodeLabels ?? (variant==='inline')`) |
-| `tracego.cb` | boolean | `false` |
-| `tracego.sys` | boolean | `false` |
-| `tracego.onboarded` | boolean | `false` |
+| `goviz.lang` | `'en' \| 'ko'` | 로케일 자동 감지 |
+| `goviz.theme` | `'dark' \| 'light'` | `dark` |
+| `goviz.guide` | `'tour' \| 'callouts' \| 'inline'` | `tour` |
+| `goviz.loop` | boolean | `false` |
+| `goviz.labels` | boolean \| null | `null` (null이면 guide가 `inline`일 때만 on — 목업 `nodeLabels ?? (variant==='inline')`) |
+| `goviz.cb` | boolean | `false` |
+| `goviz.sys` | boolean | `false` |
+| `goviz.onboarded` | boolean | `false` |
 
 - 각 값은 Svelte writable로 노출하고, set 시 즉시 localStorage에 기록한다.
-- `showSystem`은 기존 `traceStore`에 남기되 prefs(`tracego.sys`)와 양방향 동기화한다
+- `showSystem`은 기존 `traceStore`에 남기되 prefs(`goviz.sys`)와 양방향 동기화한다
   (양쪽 UI — 헤더 체크박스와 설정 팝업 — 어디서 바꿔도 일치).
 - localStorage 접근은 try/catch로 감싼다 (목업과 동일).
 
@@ -139,9 +139,9 @@ app.go           ← LoadSampleTrace() 바인딩 추가 (유일한 Go 작업)
 ### 온보딩 가이드 (3방식, lib/guide.ts + 컴포넌트 2개 + 인라인 조건부 렌더)
 
 공통:
-- 트레이스 **최초 로드 1회** 자동 표시 (`tracego.onboarded`가 false일 때 → 표시 후 true 기록).
+- 트레이스 **최초 로드 1회** 자동 표시 (`goviz.onboarded`가 false일 때 → 표시 후 true 기록).
   샘플 로드/파일 열기 모두 트리거.
-- 표시 방식은 `tracego.guide` 설정을 따른다. **최초 1회 자동 표시 경로에서만** 종료(완료/스킵/확인)
+- 표시 방식은 `goviz.guide` 설정을 따른다. **최초 1회 자동 표시 경로에서만** 종료(완료/스킵/확인)
   시 자동 재생을 시작한다 (목업 동작). `?` 버튼으로 재실행한 투어는 종료 시 사용자의 재생
   상태를 건드리지 않는다 (코드 리뷰에서 확정한 편차 — 일시정지해 둔 탐사 지점 보존).
 
@@ -183,7 +183,7 @@ app.go           ← LoadSampleTrace() 바인딩 추가 (유일한 Go 작업)
 
 ## 목업 커버리지 체크리스트
 
-구현·리뷰 시 아래 표의 모든 행을 대조한다. (목업 줄 번호는 `TraceGo Onboarding.dc.html` 기준)
+구현·리뷰 시 아래 표의 모든 행을 대조한다. (목업 줄 번호는 `GoViz Onboarding.dc.html` 기준)
 
 ### 헤더 (목업 L20-46)
 - [x] 트레이스 열기 버튼 (accent, i18n) — App.svelte
@@ -240,7 +240,7 @@ app.go           ← LoadSampleTrace() 바인딩 추가 (유일한 Go 작업)
 - [x] 반복 재생 (끝→시작 wrap, 초과분 이월) — lib/playback.ts
 - [x] 색 단어 치환 {run}/{blk} (표준/색약 × en/ko) — lib/i18n.ts
 - [x] 언어 로케일 자동 감지 (최초 실행) — lib/prefs.ts
-- [x] 가이드 최초 1회 자동 표시 (`tracego.onboarded`) — App.svelte
+- [x] 가이드 최초 1회 자동 표시 (`goviz.onboarded`) — App.svelte
 - [x] 색약 팔레트 (#0072b2/#d55e00) — lib/palette.ts
 - [x] 테마별 DIM/RING 색 — lib/palette.ts
 - [x] CSS 변수 dark/light 두 세트 — style.css / App.svelte

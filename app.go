@@ -11,8 +11,8 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/kenshin579/trace-go/internal/model"
-	"github.com/kenshin579/trace-go/internal/parse"
+	"github.com/kenshin579/goviz/internal/model"
+	"github.com/kenshin579/goviz/internal/parse"
 )
 
 // App is the Wails-bound application backend.

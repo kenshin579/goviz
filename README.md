@@ -1,12 +1,12 @@
-# trace-go
+# goviz
 
-A desktop tool for **seeing** Go concurrency. `trace-go` reads a standard Go execution trace and renders it as a **hybrid view**: a goroutine timeline on top and a live, force-directed goroutine graph below — both driven by a single, scrubbable playhead. Press play and watch goroutines run, block, and unblock each other over time.
+A desktop tool for **seeing** Go concurrency. `goviz` reads a standard Go execution trace and renders it as a **hybrid view**: a goroutine timeline on top and a live, force-directed goroutine graph below — both driven by a single, scrubbable playhead. Press play and watch goroutines run, block, and unblock each other over time.
 
 It is built on the same official trace data that `go tool trace` consumes (produced by `runtime/trace`), so it works with any Go 1.22+ program **without patching the runtime**.
 
 ## Why
 
-The inspiration, [divan/gotrace](https://github.com/divan/gotrace), made goroutine concurrency wonderfully tangible — but it patched the Go runtime to collect events, and that approach broke with each Go release and became unmaintained. `trace-go` deliberately uses only the stable, public Go 1.22+ execution-trace format (via `golang.org/x/exp/trace`), trading some richness for longevity.
+The inspiration, [divan/gotrace](https://github.com/divan/gotrace), made goroutine concurrency wonderfully tangible — but it patched the Go runtime to collect events, and that approach broke with each Go release and became unmaintained. `goviz` deliberately uses only the stable, public Go 1.22+ execution-trace format (via `golang.org/x/exp/trace`), trading some richness for longevity.
 
 ## Features
 
@@ -29,7 +29,7 @@ The Go execution trace records *that* one goroutine unblocked another and *why i
 ```bash
 # Desktop app (hot-reloading dev, or a packaged build)
 wails dev
-wails build      # → build/bin/trace-go.app
+wails build      # → build/bin/goviz.app
 
 # Inspect a trace's parsed summary as JSON, no GUI needed
 go run ./cmd/tracedump path/to/trace.out

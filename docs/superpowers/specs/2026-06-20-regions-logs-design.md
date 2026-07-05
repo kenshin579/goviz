@@ -8,7 +8,7 @@
 
 ## 1. 개요 & 범위
 
-Go 실행 trace는 `runtime/trace`의 사용자 주석을 담는다. 현재 trace-go 파서는 이를 전부 무시한다. 이 작업(B4-1)은 그중 **region**과 **log**를 파싱해 타임라인에 얹는다.
+Go 실행 trace는 `runtime/trace`의 사용자 주석을 담는다. 현재 goviz 파서는 이를 전부 무시한다. 이 작업(B4-1)은 그중 **region**과 **log**를 파싱해 타임라인에 얹는다.
 
 - **region** — `trace.WithRegion`/`StartRegion`. **한 goroutine 안의 이름 붙은 시간 구간**(중첩 가능). 예: `db-query`.
 - **log** — `trace.Log`/`Logf`. **지속시간 없는 시점 이벤트**(category + message).

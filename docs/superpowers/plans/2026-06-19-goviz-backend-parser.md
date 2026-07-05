@@ -1,4 +1,4 @@
-# trace-go Backend & Parser Implementation Plan
+# goviz Backend & Parser Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,13 +8,13 @@
 
 **Tech Stack:** Go 1.23+ (`runtime/trace` for test fixtures, `golang.org/x/exp/trace` for reading, range-over-func iterators), standard `testing`.
 
-**Scope note:** This is Plan 1 of 2 for the `trace-go` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements spec sections 3 (data model & causality) and the parser half of section 5 (phases 1–2), plus the testing strategy in section 6. The Wails app and visualization (spec sections 2, 4; phases 0, 3–5) are Plan 2.
+**Scope note:** This is Plan 1 of 2 for the `goviz` v1 spec (`docs/superpowers/specs/2026-06-19-concurrency-visualizer-design.md`). It implements spec sections 3 (data model & causality) and the parser half of section 5 (phases 1–2), plus the testing strategy in section 6. The Wails app and visualization (spec sections 2, 4; phases 0, 3–5) are Plan 2.
 
 ---
 
 ## File Structure
 
-- `go.mod` — module `github.com/kenshin579/trace-go`, Go 1.23, requires `golang.org/x/exp`.
+- `go.mod` — module `github.com/kenshin579/goviz`, Go 1.23, requires `golang.org/x/exp`.
 - `internal/model/model.go` — normalized types: `Time`, `State`, `Interval`, `Goroutine`, `EdgeCategory`, `CausalEdge`, `TraceSummary`. JSON-tagged. No logic except small helpers.
 - `internal/model/model_test.go` — JSON round-trip + `Interval.Duration` helper test.
 - `internal/causality/causality.go` — pure `Classify(reason string) model.EdgeCategory`.
@@ -37,7 +37,7 @@
 
 Run:
 ```bash
-go mod init github.com/kenshin579/trace-go
+go mod init github.com/kenshin579/goviz
 ```
 
 - [ ] **Step 2: Add the experimental trace reader dependency**
@@ -209,7 +209,7 @@ Run:
 ```bash
 go test ./internal/model/
 ```
-Expected: PASS (`ok  github.com/kenshin579/trace-go/internal/model`).
+Expected: PASS (`ok  github.com/kenshin579/goviz/internal/model`).
 
 - [ ] **Step 5: Commit**
 
@@ -235,7 +235,7 @@ package causality
 import (
 	"testing"
 
-	"github.com/kenshin579/trace-go/internal/model"
+	"github.com/kenshin579/goviz/internal/model"
 )
 
 func TestClassify(t *testing.T) {
@@ -279,7 +279,7 @@ package causality
 import (
 	"strings"
 
-	"github.com/kenshin579/trace-go/internal/model"
+	"github.com/kenshin579/goviz/internal/model"
 )
 
 // Classify maps a goroutine's block reason to an edge category. The matching is
@@ -405,8 +405,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kenshin579/trace-go/internal/model"
-	"github.com/kenshin579/trace-go/internal/parse"
+	"github.com/kenshin579/goviz/internal/model"
+	"github.com/kenshin579/goviz/internal/parse"
 )
 
 func TestParseProducesBlockedChannelInterval(t *testing.T) {
@@ -464,8 +464,8 @@ import (
 
 	exptrace "golang.org/x/exp/trace"
 
-	"github.com/kenshin579/trace-go/internal/causality"
-	"github.com/kenshin579/trace-go/internal/model"
+	"github.com/kenshin579/goviz/internal/causality"
+	"github.com/kenshin579/goviz/internal/model"
 )
 
 // gobuilder accumulates the in-progress state for one goroutine. openStart and
@@ -787,7 +787,7 @@ A thin command that parses a trace file and prints the summary as indented JSON.
 Create `cmd/tracedump/main.go`:
 ```go
 // Command tracedump parses a Go execution trace and prints the normalized
-// trace-go summary as indented JSON. Usage: tracedump <trace.out>
+// goviz summary as indented JSON. Usage: tracedump <trace.out>
 package main
 
 import (
@@ -795,7 +795,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kenshin579/trace-go/internal/parse"
+	"github.com/kenshin579/goviz/internal/parse"
 )
 
 func main() {

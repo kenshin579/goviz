@@ -1,4 +1,4 @@
-# trace-go Timeline Goroutine Grouping (B6 Stage 1) Implementation Plan
+# goviz Timeline Goroutine Grouping (B6 Stage 1) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -74,7 +74,7 @@ describe('groupGoroutines', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- grouping
 ```
 Expected: FAIL — cannot find `./grouping`.
@@ -118,7 +118,7 @@ export function groupGoroutines(goroutines: Goroutine[]): GoroutineGroup[] {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- grouping && npm run check
 ```
 Expected: all 4 tests PASS; 0 check errors.
@@ -126,7 +126,7 @@ Expected: all 4 tests PASS; 0 check errors.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/grouping.ts frontend/src/lib/grouping.test.ts
 git commit -m "feat(frontend): pure groupGoroutines (group by start function)"
 ```
@@ -165,7 +165,7 @@ describe('collapsedGroups', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- "stores/trace"
 ```
 Expected: FAIL — `collapsedGroups` / `toggleGroup` do not exist.
@@ -214,7 +214,7 @@ and add to the methods list (after `toggleSelected(id: number): void`):
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- "stores/trace" && npm run check
 ```
 Expected: all store tests PASS; 0 check errors.
@@ -222,7 +222,7 @@ Expected: all store tests PASS; 0 check errors.
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/stores/trace.ts frontend/src/stores/trace.test.ts
 git commit -m "feat(frontend): collapsedGroups store state + toggleGroup"
 ```
@@ -300,7 +300,7 @@ describe('hitGroupHeader', () => {
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout
 ```
 Expected: FAIL — `layoutTimelineRows`/`hitGroupHeader`/`GROUP_HEADER_H` not exported.
@@ -443,7 +443,7 @@ Note for the implementer: `makeTimeScale`, `stateColor`, `goroutineLabel`, `Layo
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm test -- timelineLayout && npm run check
 ```
 Expected: all timelineLayout tests pass (old `layoutTimeline` blocks AND new `layoutTimelineRows`/`hitGroupHeader` blocks); 0 check errors.
@@ -451,7 +451,7 @@ Expected: all timelineLayout tests pass (old `layoutTimeline` blocks AND new `la
 - [ ] **Step 5: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/lib/timelineLayout.ts frontend/src/lib/timelineLayout.test.ts
 git commit -m "feat(frontend): group-aware timeline row layout + header hit-test"
 ```
@@ -574,9 +574,9 @@ If, after removal, `npm run check` reports `layoutTimeline` is still referenced 
 
 Run:
 ```bash
-cd /Users/user/GolandProjects/trace-go/frontend
+cd /Users/user/GolandProjects/goviz/frontend
 npm run check && npm test
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 wails build
 ```
 Expected: 0 check errors; all unit suites pass; `wails build` succeeds. After build, revert spurious generated files: `git checkout -- frontend/dist/gitkeep frontend/wailsjs/runtime/`.
@@ -584,14 +584,14 @@ Expected: 0 check errors; all unit suites pass; `wails build` succeeds. After bu
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/user/GolandProjects/trace-go
+cd /Users/user/GolandProjects/goviz
 git add frontend/src/components/TimelineCanvas.svelte frontend/src/lib/timelineLayout.ts frontend/src/lib/timelineLayout.test.ts
 git commit -m "feat(frontend): render foldable goroutine group headers in the timeline"
 ```
 
 - [ ] **Step 7: Manual visual verification (human)**
 
-Open a trace with repeated workers (e.g. `~/Desktop/trace-tasks.out` has six `main.main.func2`). Run the app (`open build/bin/trace-go.app`), open the trace, then:
+Open a trace with repeated workers (e.g. `~/Desktop/trace-tasks.out` has six `main.main.func2`). Run the app (`open build/bin/goviz.app`), open the trace, then:
 1. **Group header** — the six `main.main.func2` lanes are preceded by a header row `▾ main.main.func2 ×6` on a faint band; the member lanes show below it (default expanded).
 2. **Collapse** — click the header: it becomes `▸ main.main.func2 ×6` and the six member lanes disappear; the rows below shift up. The playhead does NOT jump on that click.
 3. **Expand** — click again: `▾` returns and the six lanes reappear.
