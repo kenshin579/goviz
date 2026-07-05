@@ -13,15 +13,16 @@
   import CalloutChip from './components/CalloutChip.svelte'
   import { withColorWords } from './lib/i18n'
 
-  const { summary } = traceStore
+  const { summary, playing } = traceStore
   const { dict, theme, sys, guide, onboarded, cb } = prefs
   let error = ''
   let loading = false
   let settingsOpen = false
   let tourOpen = false
   let calloutsOpen = false
-  // Only the first-run tour should auto-play on finish; a ?-triggered replay
-  // must leave playback exactly as the user had it.
+  // The first-run tour always auto-plays on finish; a ?-triggered replay
+  // captures the pre-tour playing state and restores it (the tour itself
+  // pauses playback on mount).
   let playOnTourDone = false
 
   // Reflect theme on <html> so the CSS variable sets switch app-wide.
@@ -117,7 +118,7 @@
     {/if}
     <div class="header-right">
       <button class="round" title={$dict.settingsTip} on:click={() => (settingsOpen = !settingsOpen)}>⚙</button>
-      <button class="round" title={$dict.helpTip} disabled={!$summary} on:click={() => { if ($summary) tourOpen = true }}>?</button>
+      <button class="round" title={$dict.helpTip} disabled={!$summary} on:click={() => { if ($summary) { playOnTourDone = $playing; tourOpen = true } }}>?</button>
     </div>
   </header>
 

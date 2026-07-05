@@ -54,7 +54,7 @@
     style="left:{placement.spot.x}px; top:{placement.spot.y}px; width:{placement.spot.w}px; height:{placement.spot.h}px"
   ></div>
   <div class="pop" style="left:{placement.pop.x}px; top:{placement.pop.y}px; width:{POP_W}px">
-    <div class="step-label">{$dict.stepLabel.replace('{n}', String(step))}</div>
+    <div class="step-label">{$dict.stepLabel.replace('{n}', String(step)).replace('{total}', String(TOUR_TARGETS.length))}</div>
     <div class="pop-title">{ts.title}</div>
     <div class="pop-body">{withColorWords(ts.body, $dict, $cb)}</div>
     <div class="buttons">
