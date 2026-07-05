@@ -15,13 +15,17 @@ The inspiration, [divan/gotrace](https://github.com/divan/gotrace), made gorouti
 - **Playback** — play / pause / scrub / speed (0.25×–4×), Space to toggle. The timeline and graph stay in lockstep on one shared playhead.
 - **Focus** — parked `runtime.*` system goroutines are hidden by default (toggle to show); click a goroutine to cross-highlight it in both views.
 
-![GoViz hybrid view — goroutine timeline on top, live causal graph below](docs/images/hybrid-view.png)
+### Hybrid view (trace loaded)
 
-*The hybrid view: a goroutine timeline (top) and a live, force-directed goroutine graph (bottom), both driven by one shared playhead.*
+<img src="docs/images/hybrid-view.png" alt="GoViz hybrid view — goroutine timeline on top, live causal graph below" width="50%">
 
-![GoViz onboarding — open a trace or explore a sample](docs/images/onboarding.png)
+The top half is the **timeline** — one lane per goroutine, with green/gray/red segments for running / runnable / blocked, grouped by their start function (e.g. `main.main.func2 ×6`) and annotated with user tasks (`request`) and regions (`handle`). The bottom half is the **live graph** — each goroutine is a node colored by its state *at the playhead*, and a causal edge lights up (blue = channel, orange = mutex) when one goroutine unblocks another; task members are wrapped in a shared hull. The header shows trace stats (`15 goroutines · 2 edges · 2.9 ms`), play/scrub controls, speed, and the *Show system goroutines* toggle; the bottom legend decodes every color.
 
-*Start screen: explore a built-in sample trace, or open your own `.out` file.*
+### Start screen
+
+<img src="docs/images/onboarding.png" alt="GoViz start screen — open a trace or explore a sample" width="50%">
+
+Before a trace is loaded, GoViz explains its two panels — the timeline and the live graph — and offers two ways in: **Explore a sample trace** runs a built-in workload so you can try the app immediately, or **Open trace… (.out)** loads a trace you produced with `go test -trace trace.out ./...`.
 
 ## Honest limitations
 
