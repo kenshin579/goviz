@@ -41,7 +41,7 @@
         { ...$summary, goroutines: visible },
         groups,
         $collapsedGroups,
-        { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP, gutter: GUTTER_W, regionRowH: REGION_ROW_H, topOffset: taskTrack.height, stateColor: (s) => $palette.state[s] },
+        { width: cssWidth, laneHeight: LANE_H, laneGap: LANE_GAP, gutter: GUTTER_W, regionRowH: REGION_ROW_H, topOffset: taskTrack.height, stateColor: (s) => $palette.state[s] ?? $palette.dim },
       )
     : ([] as TimelineRow[])
   $: lanes = rows.filter((r): r is { kind: 'lane' } & Lane => r.kind === 'lane')

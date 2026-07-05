@@ -104,7 +104,7 @@
         const a = nodeById.get(remap.get(e.from) ?? e.from)
         const b = nodeById.get(remap.get(e.to) ?? e.to)
         if (!a || !b || a === b) continue // skip if either endpoint is hidden or both fold into one super-node
-        comets.push({ from: a, to: b, color: $palette.category[e.category], start: performance.now() })
+        comets.push({ from: a, to: b, color: $palette.category[e.category] ?? $palette.dim, start: performance.now() })
       }
       if (comets.length) ensureAnim()
     }
@@ -198,12 +198,12 @@
         // edges between two chain peers are intentionally not emphasized.
         const incident = s.id === $selectedId || tg.id === $selectedId
         ctx.globalAlpha = incident ? 1 : $palette.ghost
-        ctx.strokeStyle = incident ? $palette.category[l.category] : $palette.dim
+        ctx.strokeStyle = incident ? ($palette.category[l.category] ?? $palette.dim) : $palette.dim
         ctx.lineWidth = incident ? 2.5 : 1
       } else {
         const isActive = active.has(`${s.id}->${tg.id}`)
         ctx.globalAlpha = 1
-        ctx.strokeStyle = isActive ? $palette.category[l.category] : $palette.dim
+        ctx.strokeStyle = isActive ? ($palette.category[l.category] ?? $palette.dim) : $palette.dim
         ctx.lineWidth = isActive ? 2.5 : 1
       }
       ctx.beginPath()
@@ -235,7 +235,7 @@
       } else {
         const g = goroutineById.get(n.id)
         const st = g ? stateAt(g, t) : null
-        ctx.fillStyle = st ? $palette.state[st] : $palette.dim // dim if not alive at t
+        ctx.fillStyle = st ? ($palette.state[st] ?? $palette.dim) : $palette.dim // dim if not alive at t
         ctx.beginPath()
         ctx.arc(n.x, n.y!, 9, 0, Math.PI * 2)
         ctx.fill()
