@@ -22,7 +22,7 @@ Frontend (run from `frontend/`):
 - `npm run dev` / `npm run build` — Vite dev server / production bundle (usually driven by Wails, below).
 
 Desktop app (run from repo root; needs the `wails` CLI, Node, and a C toolchain):
-- `wails dev` — hot-reloading dev app. `wails build` — production `build/bin/goviz.app`. Either one regenerates the TypeScript bindings in `frontend/wailsjs/` from the bound Go methods.
+- `wails dev` — hot-reloading dev app. `wails build` — production `build/bin/GoViz.app`. Either one regenerates the TypeScript bindings in `frontend/wailsjs/` from the bound Go methods.
 - Generating a trace to open: run any Go program under `runtime/trace.Start/Stop` (see `app_test.go:writeSampleTrace` for the in-process pattern), then File → "Open trace…".
 
 After `wails build`/`wails dev`, the working tree may show spurious changes to `frontend/dist/gitkeep` and `frontend/wailsjs/runtime/*` — `git checkout --` those before committing. `frontend/package.json.md5` is gitignored.
