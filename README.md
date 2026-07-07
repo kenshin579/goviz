@@ -41,7 +41,7 @@ The Go execution trace records *that* one goroutine unblocked another and *why i
 ```bash
 # Desktop app (hot-reloading dev, or a packaged build)
 wails dev
-wails build      # → build/bin/goviz.app
+wails build      # → build/bin/GoViz.app
 
 # Inspect a trace's parsed summary as JSON, no GUI needed
 go run ./cmd/tracedump path/to/trace.out
